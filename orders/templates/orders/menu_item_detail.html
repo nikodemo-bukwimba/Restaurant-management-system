@@ -1,0 +1,35 @@
+{% extends "orders/base.html" %}
+{% load static %}
+{% block title %}
+    {{ menu_item.name }}
+{% endblock %}
+{% block content %}
+    <div class="product-detail">
+        <!-- Product Image -->
+        <img src="{% if menu_item.image %}{{ menu_item.image.url }}{% else %}
+        {% static "img/no_image.png" %}{% endif %}" alt="{{ menu_item.name }}">
+
+        <!-- Product Name -->
+        <h1>{{ menu_item.name }}</h1>
+
+        <!-- Product Category -->
+        <h2>
+            <a href="{{ menu_item.category.get_absolute_url }}">
+                {{ menu_item.category }}
+            </a>
+        </h2>
+
+        <!-- Product Price -->
+        <p class="price">Tsh.{{ menu_item.customer_price }}</p>
+
+        <!-- Product Description -->
+        {{ menu_item.description|linebreaks }}
+
+        <!-- Cart Form -->
+        <form action="{% url 'cart:cart_add' menu_item.id %}" method="post">
+            {{ cart_menu_item_form.as_p }}
+            {% csrf_token %}
+            <input type="submit" value="Add to cart">
+        </form>
+    </div>
+{% endblock %}

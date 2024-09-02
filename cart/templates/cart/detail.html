@@ -1,0 +1,77 @@
+{% extends "orders/base.html" %}
+{% load static %}
+{% block title %}
+    Your shopping cart
+{% endblock %}
+{% block content %}
+    <h1>Vyakula ulivyochagua</h1>
+    <div class="table-container">
+        <table class="cart">
+            <thead>
+                <tr>
+                    <th class="hide-on-small">Picha</th>
+                    <th>Chakula</th>
+                    <th>Idadi</th>
+                    <th>Ondoa</th>
+                    <th>Bei ya moja</th>
+                    <th>Bei ya jumla</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cart %}
+                    {% with menu_item=item.menu_item %}
+                        <tr>
+                            <td class="hide-on-small">
+                                <a href="{{ menu_item.get_absolute_url }}">
+                                    <img src="{% if menu_item.image %}{{ menu_item.image.url }}{% else %}{% static 'img/no_image.png' %}{% endif %}">
+                                </a>
+                            </td>
+                            <td>{{ menu_item.name }}</td>
+                            <td>
+                                <form action="{% url 'cart:cart_add' menu_item.id %}" method="post">
+                                    {{ item.update_quantity_form.quantity }}
+                                    <input type="hidden" name="update_quantity" value="True">
+                                    <input type="submit" value="Badilisha">
+                                    {% csrf_token %}
+                                </form>
+                            </td>
+                            <td>
+                                <form action="{% url 'cart:cart_remove' menu_item.id %}" method="post">
+                                    <input type="submit" value="Ondoa">
+                                    {% csrf_token %}
+                                </form>
+                            </td>
+                            <td class="num">Tsh.{{ item.price }}</td>
+                            <td class="num">Tsh.{{ item.total_price }}</td>
+                        </tr>
+                    {% endwith %}
+                {% endfor %}
+                <tr class="total">
+                    <td>Jumla</td>
+                    <td colspan="4"></td>
+                    <td class="num">Tsh.{{ cart.get_total_price }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="text-right">
+        <a href="{% url 'orders:menu_item_list' %}" class="button light">Endelea kuchagua</a>
+        <a href="{% url 'oda:order_create' %}" class="button">Weka Oda</a>
+    </p>
+{% endblock %}
+
+<style>
+    .table-container {
+        overflow-x: auto;
+    }
+
+    .hide-on-small {
+        display: table-cell;
+    }
+
+    @media screen and (max-width: 768px) {
+        .hide-on-small {
+            display: none;
+        }
+    }
+</style>

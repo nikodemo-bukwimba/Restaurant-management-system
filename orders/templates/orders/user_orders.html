@@ -1,0 +1,51 @@
+{% extends 'orders/base.html' %}
+
+{% block title %}My Orders{% endblock %}
+
+{% block content %}
+    <h1>My Orders</h1>
+
+    {% if orders %}
+        <div class="table-container">
+            <table class="orders">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Created</th>
+                        <th>Total Cost</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                        <tr>
+                            <td>{{ order.id }}</td>
+                            <td>{{ order.created }}</td>
+                            <td>${{ order.get_total_cost }}</td>
+                        </tr>
+                    {% endfor %}
+                    <tr class="total">
+                        <td colspan="2">Total Sales</td>
+                        <td>${{ total_sales }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>You have no orders.</p>
+    {% endif %}
+{% endblock %}
+
+<style>
+    .table-container {
+        overflow-x: auto;
+    }
+
+    @media screen and (max-width: 768px) {
+        .table-container {
+            margin-left: -20px;
+            margin-right: -20px;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+    }
+</style>

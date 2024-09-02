@@ -1,0 +1,63 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}My Restaurant Management{% endblock %}</title>
+    <link href="{% static 'css/base.css' %}" rel="stylesheet">
+</head>
+<body>
+    <header id="header">
+        <a href="{% url 'orders:menu_item_list' %}" class="logo">Restaurant</a>
+         <div class="orders">
+            <a href="{% url 'orders:user_orders' %}">My Orders</a>
+        </div>
+    </header>
+    <nav id="subheader">
+        <div class="cart">
+            {% with total_items=cart|length %}
+                {% if total_items > 0 %}
+                    Iliyochaguliwa:
+                    <a href="{% url 'cart:cart_detail' %}">
+                        {{ total_items }} {{ total_item|pluralize }}, Jumla:
+                        Tsh.{{ cart.get_total_price|floatformat:2 }}
+                    </a>
+                {% else %}
+                    Hujachagua chakula
+                {% endif %}
+            {% endwith %}
+        </div>
+    </nav>
+    
+    <!-- Display messages -->
+    <div class="messages">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <main id="content">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Get all message elements
+            var messageElements = document.querySelectorAll(".messages .alert");
+            messageElements.forEach(function(messageElement) {
+                // Set a timeout to hide each message after 5 seconds (5000 milliseconds)
+                setTimeout(function() {
+                    messageElement.style.opacity = 0;
+                    setTimeout(function() {
+                        messageElement.style.display = 'none';
+                    }, 500); // Delay to allow opacity transition
+                }, 5000); // Duration to show the message
+            });
+        });
+    </script>
+</body>
+</html>
