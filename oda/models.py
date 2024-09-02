@@ -1,12 +1,15 @@
 from django.db import models
 from django.conf import settings
+from users.models import Waiter, Manager, CEO
 from orders.models import MenuItem
 
 class Order(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # The user who placed the order
+    waiter = models.ForeignKey(Waiter, null=True, blank=True, on_delete=models.SET_NULL)  # Waiter assigned to this order
+    manager = models.ForeignKey(Manager, null=True, blank=True, on_delete=models.SET_NULL)  # Manager who placed the order
+    ceo = models.ForeignKey(CEO, null=True, blank=True, on_delete=models.SET_NULL)  # CEO who placed the order
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    # paid = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['-created']
