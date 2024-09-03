@@ -1,0 +1,178 @@
+{% extends 'orders/base.html' %}
+{% load static %}
+
+{% block content %}
+<h2>CEO Dashboard</h2>
+
+<!-- Overview Cards Section -->
+<div class="row">
+    <div class="col-md-4">
+        <div class="card text-white bg-primary mb-3">
+            <div class="card-header">Total Waiters</div>
+            <div class="card-body">
+                <h5 class="card-title">{{ waiters.count }}</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-header">Total Menu Items</div>
+            <div class="card-body">
+                <h5 class="card-title">{{ menu_items.count }}</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-danger mb-3">
+            <div class="card-header">Total Expenses</div>
+            <div class="card-body">
+                <h5 class="card-title">{{ expenses.count }}</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-info mb-3">
+            <div class="card-header">Total Orders</div>
+            <div class="card-body">
+                <h5 class="card-title">{{ orders.count }}</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-warning mb-3">
+            <div class="card-header">Total Sales</div>
+            <div class="card-body">
+                <h5 class="card-title">{{ sales.count }}</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="row mt-4">
+    <!-- Sales Trends Chart -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">Sales Trends</div>
+            <div class="card-body">
+                <canvas id="salesTrendsChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <!-- Expenses Distribution Chart -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">Expenses Distribution</div>
+            <div class="card-body">
+                <canvas id="expensesDistributionChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <!-- Popular Menu Items Chart -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">Popular Menu Items</div>
+            <div class="card-body">
+                <canvas id="popularMenuItemsChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tables Section -->
+<div class="row mt-4">
+    <!-- Recent Orders Table -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Recent Orders</div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Waiter</th>
+                            <th>Menu Item</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in recent_orders %}
+                            <tr>
+                                <td>{{ order.id }}</td>
+                                <td>{{ order.waiter }}</td>
+                                <td>{{ order.menu_item }}</td>
+                                <td>${{ order.amount }}</td>
+                                <td>{{ order.date }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">No recent orders</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!-- Top-performing Waiters Table -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Top-performing Waiters by Sales</div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Waiter</th>
+                            <th>Total Sales</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for waiter in top_waiters %}
+                            <tr>
+                                <td>{{ waiter.name }}</td>
+                                <td>${{ waiter.total_sales }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="2" class="text-center">No top-performing waiters</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions Section -->
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <a href="{% url 'add_menu_item' %}" class="btn btn-primary btn-lg">Add New Menu Item</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <a href="{% url 'detailed_sales_report' %}" class="btn btn-secondary btn-lg">View Detailed Sales Report</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <a href="{% url 'manage_waiters' %}" class="btn btn-success btn-lg">Manage Waiters</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{% static 'js/ceo_dashboard.js' %}"></script>
+{% endblock %}

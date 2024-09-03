@@ -1,0 +1,39 @@
+{% extends 'orders/base.html' %}
+{% load static %}
+
+{% block content %}
+<h2>Manager Dashboard</h2>
+
+<!-- Overview Cards Section -->
+<div class="row">
+    <div class="col-md-4">
+        <div class="card text-white bg-primary mb-3">
+            <div class="card-header">Number of Waiters Managed</div>
+            <div class="card-body">
+                <h5 class="card-title">{{ waiters_managed.count }}</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-header">Total Orders</div>
+            <div class="card-body">
+                <h5 class="card-title">{{ total_orders }}</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-info mb-3">
+            <div class="card-header">Total Sales</div>
+            <div class="card-body">
+                <h5 class="card-title">{{ total_sales }}</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+    <script type="text/javascript" src="{% static 'js/script.js' %}"></script>
+{% endblock %}
