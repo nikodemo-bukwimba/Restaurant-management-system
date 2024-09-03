@@ -7,6 +7,30 @@
     <title>{% block title %}My Restaurant Management{% endblock %}</title>
     <link href="{% static 'css/base.css' %}" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        #back-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background-color: #333;
+            color: #fff;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: pointer;
+            z-index: 1000;
+        }
+        #back-to-top.visible {
+            display: flex;
+        }
+        #back-to-top i {
+            font-size: 20px;
+        }
+    </style>
 </head>
 <body>
     <header id="header">
@@ -18,8 +42,8 @@
         </div>
         <div id="sidebar-menu">
             <ul class="sidebar">
-                <li><a href="{% url 'orders:user_orders' %}">ODA ZANGU</a></li>
-                <li><a href="{% url 'orders:add_expense' %}">MATUMIZI</a></li>
+                <li><a href="{% url 'orders:user_orders' %}">ODA na MAUZO</a></li>
+                <li><a href="{% url 'expenses:waiter_expenses' %}">MATUMIZI</a></li> <!-- Keep only the "MAKATO" link -->
             </ul>
         </div>
     </header>
@@ -55,27 +79,8 @@
     </main>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            var menuIcon = document.getElementById("menu-icon");
-            var sidebarMenu = document.getElementById("sidebar-menu");
-
-            menuIcon.addEventListener("click", function() {
-                sidebarMenu.classList.toggle("visible");
-            });
-
-            // Get all message elements
-            var messageElements = document.querySelectorAll(".messages .alert");
-            messageElements.forEach(function(messageElement) {
-                // Set a timeout to hide each message after 5 seconds (5000 milliseconds)
-                setTimeout(function() {
-                    messageElement.style.opacity = 0;
-                    setTimeout(function() {
-                        messageElement.style.display = 'none';
-                    }, 500); // Delay to allow opacity transition
-                }, 5000); // Duration to show the message
-            });
-        });
-    </script>
+    <script src="{% static 'js/scripts.js' %}"></script>
+    <!-- Back to Top Button -->
+    <a href="#" id="back-to-top" title="Back to Top"><i class="fas fa-chevron-up"></i></a>
 </body>
 </html>

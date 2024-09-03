@@ -3,7 +3,7 @@
 {% block title %}My Orders{% endblock %}
 
 {% block content %}
-    <h1>My Orders</h1>
+    <h1>ODA ZANGU</h1>
 
     {% if orders %}
         <div class="table-container">
@@ -13,6 +13,8 @@
                         <th>Order ID</th>
                         <th>Created</th>
                         <th>Total Cost</th>
+                        <th>Payment Method</th>
+                        <th>Update Payment Method</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -21,11 +23,47 @@
                             <td>{{ order.id }}</td>
                             <td>{{ order.created }}</td>
                             <td>${{ order.get_total_cost }}</td>
+                            <td>{{ order.get_payment_method_display }}</td>
+                            <td>
+                                <form method="post" action="{% url 'orders:update_payment_method' order.id %}">
+                                    {% csrf_token %}
+                                    <select name="payment_method">
+                                        <option value="cash" {% if order.payment_method == 'cash' %}selected{% endif %}>Cash</option>
+                                        <option value="credit_card" {% if order.payment_method == 'credit_card' %}selected{% endif %}>Credit Card</option>
+                                        <option value="phone" {% if order.payment_method == 'phone' %}selected{% endif %}>Phone</option>
+                                    </select>
+                                    <button type="submit">Update</button>
+                                </form>
+                            </td>
                         </tr>
                     {% endfor %}
-                    <tr class="total">
-                        <td colspan="2">Total Sales</td>
-                        <td>${{ total_sales }}</td>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Gap between tables -->
+        <div style="height: 20px;"></div>
+
+        <!-- MAUZO Table -->
+        <h2>MAUZO</h2>
+        <div class="table-container">
+            <table style="width: 100%; border-collapse: collapse;">
+                <tbody>
+                    <tr style="background-color: #27272789; border-top: 2px solid #333;">
+                        <td colspan="2" style="padding: 10px; text-align: left; font-weight: bold;">Total Sales</td>
+                        <td style="padding: 10px; text-align: right;">${{ total_sales }}</td>
+                    </tr>
+                    <tr style="background-color: #ffffff;">
+                        <td colspan="2" style="padding: 10px; text-align: left; font-weight: bold;">Total Phone Payments</td>
+                        <td style="padding: 10px; text-align: right;">${{ total_phone_payments }}</td>
+                    </tr>
+                    <tr style="background-color: #27272789;">
+                        <td colspan="2" style="padding: 10px; text-align: left; font-weight: bold;">Total Expenses</td>
+                        <td style="padding: 10px; text-align: right;">${{ total_expenses }}</td>
+                    </tr>
+                    <tr style="background-color: #004d00; color: white; border-top: 2px solid #333;">
+                        <td colspan="2" style="padding: 10px; text-align: left; font-weight: bold;">Amount to Submit</td>
+                        <td style="padding: 10px; text-align: right; font-weight: bold;">${{ amount_to_submit }}</td>
                     </tr>
                 </tbody>
             </table>

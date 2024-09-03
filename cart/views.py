@@ -34,7 +34,3 @@ def cart_detail(request):
         )
     
     return render(request, 'cart/detail.html', {'cart': cart})
-
-# def order_confirmation(request, order_id):
-#     order = get_object_or_404(Order, id=order_id)
-#     return render(request, 'orders/order_confirmation.html', {'order': order})

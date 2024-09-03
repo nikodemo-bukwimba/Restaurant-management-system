@@ -9,6 +9,8 @@ def order_create(request):
         # Create an order with details from the logged-in user
         order = Order.objects.create(user=request.user)
         
+        total_cost = 0  # Initialize total cost
+        
         # Iterate through the cart and create OrderItem for each item
         for item in cart:
             OrderItem.objects.create(
@@ -17,6 +19,11 @@ def order_create(request):
                 price=item['price'],
                 quantity=item['quantity']
             )
+            total_cost += item['price'] * item['quantity']  # Calculate total cost
+        
+        # Set total cost for the order
+        order.total_cost = total_cost
+        order.save()
         
         # Clear the cart after creating the order
         cart.clear()
@@ -26,9 +33,5 @@ def order_create(request):
         
         # Redirect to the menu list page
         return redirect('orders:menu_item_list')
+    
     return render(request, 'oda/order_create.html')
-
-# def order_confirmation(request, order_id):
-#     order = get_object_or_404(Order, id=order_id)
-#     return render(request, 'oda/order_confirmation.html', {'order': order})
-
