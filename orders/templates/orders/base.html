@@ -6,14 +6,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}My Restaurant Management{% endblock %}</title>
     <link href="{% static 'css/base.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <header id="header">
-        <a href="{% url 'orders:menu_item_list' %}" class="logo">Restaurant</a>
-         <div class="orders">
-            <a href="{% url 'orders:user_orders' %}">My Orders</a>
+        <div class="header-content">
+            <div class="menu-toggle">
+                <button id="menu-icon"><i class="fas fa-bars"></i></button>
+            </div>
+            <a href="{% url 'orders:menu_item_list' %}" class="logo">Restaurant</a>
+        </div>
+        <div id="sidebar-menu">
+            <ul class="sidebar">
+                <li><a href="{% url 'orders:user_orders' %}">ODA ZANGU</a></li>
+                <li><a href="{% url 'orders:add_expense' %}">MATUMIZI</a></li>
+            </ul>
         </div>
     </header>
+
     <nav id="subheader">
         <div class="cart">
             {% with total_items=cart|length %}
@@ -44,8 +54,16 @@
         {% endblock %}
     </main>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            var menuIcon = document.getElementById("menu-icon");
+            var sidebarMenu = document.getElementById("sidebar-menu");
+
+            menuIcon.addEventListener("click", function() {
+                sidebarMenu.classList.toggle("visible");
+            });
+
             // Get all message elements
             var messageElements = document.querySelectorAll(".messages .alert");
             messageElements.forEach(function(messageElement) {

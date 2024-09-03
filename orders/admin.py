@@ -16,3 +16,13 @@ class MenuItemAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
     ordering = ['name']
     search_fields = ['name', 'description']
+
+from django.contrib import admin
+from .models import Expense
+
+@admin.register(Expense)
+class ExpenseAdmin(admin.ModelAdmin):
+    list_display = ('waiter', 'amount', 'description', 'date')
+    list_filter = ('waiter', 'date')
+    search_fields = ('description',)
+

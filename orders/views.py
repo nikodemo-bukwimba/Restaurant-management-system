@@ -3,6 +3,10 @@ from .models import MenuCategory, MenuItem
 from orders.models import MenuItem
 from cart.forms import CartAddMenuItemForm
 from oda.models import Order
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from .models import Expense
+from .forms import ExpenseForm
 
 def menu_item_list(request, category_slug=None):
     category = None
@@ -32,3 +36,17 @@ def user_orders(request):
         'orders': orders,
         'total_sales': total_sales
     })
+
+@login_required
+def add_expense(request):
+    if request.method == 'POST':
+        form = ExpenseForm(request.POST)
+        if form.is_valid():
+            expense = form.save(commit=False)
+            expense.waiter = request.user.waiter  # Link expense to the logged-in waiter
+            expense.save()
+            # Optionally update the waiter's total sales here
+            return redirect('orders:menu_item_list')  # Redirect to a relevant page
+    else:
+        form = ExpenseForm()
+    return render(request, 'orders/add_expense.html', {'form': form})

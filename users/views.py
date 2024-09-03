@@ -17,21 +17,22 @@ def user_login(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 auth_login(request, user)
-                # Redirect based on user role
-                if user.groups.filter(name='CEO').exists():
-                    return redirect('users:ceo_dashboard')
-                elif user.groups.filter(name='Manager').exists():
-                    return redirect('users:manager_dashboard')
-                elif user.groups.filter(name='Waiter').exists():
+                
+                # Check if user is associated with one of the custom roles
+                if Waiter.objects.filter(user=user).exists():
                     return redirect('orders:menu_item_list')
+                elif Manager.objects.filter(user=user).exists():
+                    return redirect('users:manager_dashboard')
+                elif CEO.objects.filter(user=user).exists():
+                    return redirect('users:ceo_dashboard')
                 else:
-                    return redirect('menu_item_list')  # or another default page
+                    form.add_error(None, 'User does not have an appropriate role.')
             else:
-                # Handle invalid login
                 form.add_error(None, 'Invalid username or password')
     else:
         form = LoginForm()
     return render(request, 'users/login.html', {'form': form})
+
 
 @login_required
 def ceo_dashboard(request):

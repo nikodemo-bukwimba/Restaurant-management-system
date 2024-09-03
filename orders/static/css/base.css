@@ -4,7 +4,8 @@
 body {
     margin: 0;
     padding: 0;
-    font-family: helvetica, sans-serif;
+    font-family: 'Ubuntu', sans-serif;
+    background-color: #f4f4f9;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -28,6 +29,7 @@ a.button, input[type="submit"] {
     padding: 10px 20px;
     font-size: 14px;
     border: 0;
+    cursor: pointer;
 }
 
 a.button.light {
@@ -111,13 +113,13 @@ form p label {
 }
 
 form p input {
-    width: 300px;
-    font-size: 13px;
-    margin-bottom: 10px;
-    padding: 10px 12px;
-    border: 0;
-    background: #efefef;
-    color: #666;
+    width: 100%;
+    font-size: 14px;
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    background: #fff;
+    color: #333;
     border-radius: 4px;
 }
 
@@ -139,19 +141,23 @@ ul.errorlist {
     color: #e6e3e3;
 }
 
+#header .header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Distribute space between items */
+}
+
+#header .logo {
+    font-family: 'Ubuntu', sans-serif;
+    color: #f3f0f0;
+    font-size: 22px;
+}
+
 #subheader {
     background: #8d8d84;
     color: #030005;
     padding: 15px 100px;
     overflow: auto;
-}
-
-#header .logo {
-    font-family: 'Ubuntu', sans-serif;
-    float: left;
-    color: #f3f0f0;
-    font-size: 22px;
-    margin-right: 10%;
 }
 
 #subheader .cart {
@@ -166,35 +172,98 @@ ul.errorlist {
     overflow: hidden;
 }
 
-/* Sidebar */
+/* Sidebar Styles */
+#sidebar-menu {
+    position: fixed;
+    top: 0;
+    right: -220px; /* Hide sidebar offscreen initially */
+    width: 220px;
+    height: 100%;
+    background: #f4f4f9;
+    transition: right 0.3s ease;
+    overflow-y: auto;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+#sidebar-menu.visible {
+    right: 0; /* Show sidebar when visible class is added */
+}
+
+.menu-toggle {
+    position: relative;
+}
+
+.menu-toggle #menu-icon {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #fff;
+}
+
+#sidebar-menu .sidebar {
+    padding: 20px;
+    list-style: none;
+    margin: 0;
+}
+
+#sidebar-menu .sidebar li {
+    padding: 10px 0;
+}
+
+#sidebar-menu .sidebar li a {
+    display: block;
+    color: #260485;
+    text-decoration: none;
+}
+
+#sidebar-menu .sidebar li a:hover {
+    color: #77b6e2;
+}
+
+/* Main content adjustment when sidebar is visible */
+#content {
+    padding: 0 100px;
+    transition: margin-right 0.3s ease;
+}
+
+#sidebar-menu.visible ~ #content {
+    margin-right: 220px; /* Adjust content area to make room for sidebar */
+}
+
+/* Sidebar Adjustments for Previous Styles */
 #sidebar {
     width: 220px;
     padding: 30px 20px 0 0;
     float: left;
+    background: #f9f9f9; /* Light background for sidebar */
 }
 
 #sidebar ul {
     margin: 0;
     padding: 0;
+    list-style: none;
 }
 
 #sidebar ul li {
     margin: 0;
-    list-style: none;
-    padding: 10px 14px;
+    padding: 10px 0;
 }
 
 #sidebar ul li a {
     display: block;
-}
-
-#sidebar ul li.selected {
-    background: #5993bb;
+    color: #333; /* Dark text color for sidebar links */
+    padding: 10px;
+    text-align: left;
     border-radius: 4px;
 }
 
+#sidebar ul li.selected {
+    background: #d0e9c6; /* Lighter color for selected items */
+}
+
 #sidebar ul li.selected a {
-    color: #fff;
+    color: #000; /* Darker text color for selected item */
 }
 
 /* Main Content Area */
@@ -380,6 +449,59 @@ form div.field {
     border-color: #ebccd1;
 }
 
+/* Add Expense Form Specific */
+.expense-container {
+    max-width: 500px;
+    margin: 30px auto;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.expense-title {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+}
+
+.expense-form-container {
+    padding: 10px;
+}
+
+.expense-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.expense-form input,
+.expense-form textarea {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.expense-form textarea {
+    resize: vertical;
+}
+
+.btn-submit {
+    padding: 10px 20px;
+    background-color: #5993bb;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-submit:hover {
+    background-color: #467a9c;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     #header, #subheader {
@@ -388,7 +510,6 @@ form div.field {
 
     #header .logo {
         font-size: 18px;
-        margin-right: 0;
     }
 
     #subheader .cart {
