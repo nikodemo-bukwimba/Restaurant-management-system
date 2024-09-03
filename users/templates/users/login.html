@@ -1,5 +1,4 @@
-<!-- templates/login.html -->
-{% load static %}  <!-- Ensure to load the static template tag -->
+{% load static %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -15,9 +14,32 @@
 
         <form method="post" action="{% url 'users:login' %}">
             {% csrf_token %}
-            {{ form.as_p }}
+            <div>
+                {{ form.as_p }}
+            </div>
+            <div class="show-password-container">
+                <input type="checkbox" id="show-password" onclick="togglePassword()">
+                <label for="show-password">Show Password</label>
+            </div>
             <button type="submit" class="btn btn-primary">Login</button>
         </form>
     </div>
+
+    <!-- Footer section -->
+    <footer style="text-align: center; margin-top: 20px;">
+        <p>&copy; 2024 Powered by Issubi</p>
+    </footer>
+
+    <!-- JavaScript to toggle password visibility -->
+    <script>
+        function togglePassword() {
+            var passwordField = document.querySelector('input[type="password"]');
+            if (passwordField.type === "password") {
+                passwordField.type = "text";
+            } else {
+                passwordField.type = "password";
+            }
+        }
+    </script>
 </body>
 </html>

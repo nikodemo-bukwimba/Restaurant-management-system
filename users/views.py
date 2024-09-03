@@ -33,8 +33,6 @@ def user_login(request):
         form = LoginForm()
     return render(request, 'users/login.html', {'form': form})
 
-
-
 @login_required
 def ceo_dashboard(request):
     waiters = Waiter.objects.all()
