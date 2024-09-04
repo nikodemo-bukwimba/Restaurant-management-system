@@ -17,6 +17,8 @@ class Order(models.Model):
     ],
     default='cash'
     )
+    sender_name = models.CharField(max_length=100, blank=True, null=True) 
+    manager_confirmed = models.BooleanField(default=False)
 
     def get_total_cost(self):
         # Implement your method to calculate the total cost

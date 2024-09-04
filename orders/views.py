@@ -13,6 +13,7 @@ from django.db.models import Sum
 from django.utils import timezone
 from datetime import datetime, timedelta
 from decimal import Decimal
+from django.http import HttpResponseBadRequest
 
 def menu_item_list(request, category_slug=None):
     category = None
@@ -56,12 +57,16 @@ def user_orders(request):
     # Calculate the amount to submit (total sales - total expenses - total phone payments)
     amount_to_submit = total_sales - total_expenses - total_phone_payments
     
+    # Determine if there are any phone payments
+    has_phone_payments = orders.filter(payment_method='phone').exists()
+    
     return render(request, 'orders/user_orders.html', {
         'orders': orders,
         'total_sales': total_sales,
         'total_phone_payments': total_phone_payments,
         'total_expenses': total_expenses,
         'amount_to_submit': amount_to_submit,
+        'has_phone_payments': has_phone_payments,
     })
 
 
@@ -100,12 +105,26 @@ def waiter_expenses(request):
     }
     return render(request, 'orders/waiter_expenses.html', context)
 
-
 def update_payment_method(request, order_id):
     order = get_object_or_404(Order, id=order_id)
+    
     if request.method == 'POST':
         payment_method = request.POST.get('payment_method')
+        sender_name = request.POST.get('sender_name', '')  # Default to empty if not provided
+        
+        if payment_method not in ['cash', 'credit_card', 'phone']:
+            return HttpResponseBadRequest("Invalid payment method")
+
+        # Update payment method and sender name
         order.payment_method = payment_method
+        if payment_method == 'phone':
+            order.sender_name = sender_name
+        else:
+            order.sender_name = ''
         order.save()
-        return redirect('orders:user_orders')  # or any other view
-    return redirect('orders:user_orders')  # Handle GET requests if needed
+
+        # Redirect to the orders page or another page
+        return redirect('orders:user_orders')  # Adjust the redirect as needed
+    
+    # Handle the case where the request method is not POST
+    return HttpResponseBadRequest("Invalid request method")
