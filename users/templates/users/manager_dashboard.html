@@ -1,39 +1,59 @@
 {% extends 'orders/base.html' %}
+
 {% load static %}
 
 {% block content %}
-<h2>Manager Dashboard</h2>
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">Manager Dashboard</h2>
 
-<!-- Overview Cards Section -->
-<div class="row">
-    <div class="col-md-4">
-        <div class="card text-white bg-primary mb-3">
-            <div class="card-header">Number of Waiters Managed</div>
-            <div class="card-body">
-                <h5 class="card-title">{{ waiters_managed.count }}</h5>
+    <!-- Overview Cards Section -->
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-header">Wahudumu</div>
+                <div class="card-body">
+                    <h5 class="card-title text-center">{{ waiters_managed.count }}</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-header">jumla ya oda</div>
+                <div class="card-body">
+                    <h5 class="card-title text-center">{{ total_orders }}</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-header">Mauzo ya jumla</div>
+                <div class="card-body">
+                    <h5 class="card-title text-center">{{ total_sales }}</h5>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card text-white bg-success mb-3">
-            <div class="card-header">Total Orders</div>
-            <div class="card-body">
-                <h5 class="card-title">{{ total_orders }}</h5>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card text-white bg-info mb-3">
-            <div class="card-header">Total Sales</div>
-            <div class="card-body">
-                <h5 class="card-title">{{ total_sales }}</h5>
-            </div>
-        </div>
+
+    <!-- Waiter List Section -->
+    <div class="waiter-list mt-5">
+        <h3 class="text-center">List of Waiters</h3>
+        <ul class="list-group">
+            {% for waiter in waiters_managed %}
+            <li class="list-group-item">
+                <a href="{% url 'users:waiter_detail_and_accept' waiter.id %}">{{ waiter.user.get_full_name }}</a>
+            </li>
+            {% empty %}
+            <li class="list-group-item">No waiters found.</li>
+            {% endfor %}
+        </ul>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/manager_dashboard.css' %}">
 {% endblock %}
 
 {% block extra_js %}
-    <script type="text/javascript" src="{% static 'js/script.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/script.js' %}"></script>
 {% endblock %}

@@ -2,9 +2,7 @@
 
 {% load static %}
 
-{% block title %}
-    Confirm Your Order
-{% endblock %}
+{% block title %}Confirm Your Order{% endblock %}
 
 {% block content %}
     <h1>Confirm Your Order</h1>
@@ -46,10 +44,26 @@
         </div>
 
         <p>Thank you for your order! Click the button below to finalize your purchase.</p>
-        <form action="{% url 'oda:order_create' %}" method="post">
-            {% csrf_token %}
-            <input type="submit" value="Place Order" class="button">
-        </form>
+        
+        {% if is_manager %}
+            <form action="{% url 'oda:order_create' %}" method="post" class="order-form">
+                {% csrf_token %}
+                <label for="waiter">Assign Waiter:</label>
+                <select name="waiter" id="waiter">
+                    <option value="">Select a waiter</option>
+                    {% for waiter in waiters %}
+                        <option value="{{ waiter.id }}">{{ waiter.name }}</option>
+                    {% endfor %}
+                </select>
+                <input type="submit" value="Place Order" class="button">
+            </form>
+        {% else %}
+            <form action="{% url 'oda:order_create' %}" method="post">
+                {% csrf_token %}
+                <input type="submit" value="weka oda" class="button">
+            </form>
+        {% endif %}
+        
     {% else %}
         <p>Your cart is empty.</p>
         <a href="{% url 'orders:menu_item_list' %}" class="button">Continue Shopping</a>

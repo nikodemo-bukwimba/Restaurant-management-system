@@ -1,0 +1,10 @@
+{% extends 'orders/base.html' %}
+{% load static %}
+
+{% block title %}Page Not Found{% endblock %}
+
+{% block content %}
+    <h1>Ukurasa Unaotafuta Haupo</h1>
+    <p>Huna oda za kuangalia</p>
+    <a href="{% url 'orders:menu_item_list' %}">Rudi nyumbani</a>
+{% endblock %}

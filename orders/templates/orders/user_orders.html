@@ -4,6 +4,29 @@
 
 {% block content %}
     <h1>ODA ZANGU</h1>
+    
+    <!-- Display Shift Information -->
+    {% if shift %}
+        <div style="margin-bottom: 20px;">
+            <h2>Shift Information</h2>
+            <p>Shift for: {{ shift.waiter.name }}</p>
+            <p>Started at: {{ shift.start_time|date:"Y-m-d H:i" }}</p>
+            {% if shift.end_time %}
+                <p>Ended at: {{ shift.end_time|date:"Y-m-d H:i" }}</p>
+            {% else %}
+                <p>Status: Ongoing</p>
+            {% endif %}
+        </div>
+    {% else %}
+        <p>No active shift available.</p>
+    {% endif %}
+
+    <!-- View History Button -->
+    <div style="margin-bottom: 20px;">
+        <a href="{% url 'orders:waiter_history' %}" class="btn btn-primary" style="text-decoration: none; padding: 10px 15px; background-color: #004d00; color: white; border-radius: 5px;">
+            View History
+        </a>
+    </div>
 
     {% if orders %}
         <div class="table-container">
@@ -37,7 +60,7 @@
                                         <option value="phone" {% if order.payment_method == 'phone' %}selected{% endif %}>Phone</option>
                                     </select>
                                     <input type="text" name="sender_name" placeholder="Enter sender name"
-                                           value="{% if order.payment_method == 'phone' %}{{ order.sender_name }}{% else %}''{% endif %}" 
+                                           value="{% if order.payment_method == 'phone' %}{{ order.sender_name }}{% endif %}" 
                                            style="{% if order.payment_method != 'phone' %}display:none;{% endif %}" 
                                            id="sender-name-{{ order.id }}">
                                     <button type="submit">Update</button>
@@ -98,7 +121,6 @@
             senderNameInput.style.display = 'inline';
         } else {
             senderNameInput.style.display = 'none';
-            // Clear the sender name input field
             senderNameInput.value = '';
         }
     }
@@ -116,5 +138,28 @@
             padding-left: 20px;
             padding-right: 20px;
         }
+    }
+
+    .btn {
+        display: inline-block;
+        font-weight: 400;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: middle;
+        cursor: pointer;
+        user-select: none;
+        background-color: #007bff;
+        border: 1px solid transparent;
+        padding: 0.375rem 0.75rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        border-radius: 0.25rem;
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-primary {
+        background-color: #004d00;
+        border-color: #004d00;
     }
 </style>

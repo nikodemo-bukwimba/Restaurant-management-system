@@ -1,0 +1,145 @@
+{% extends 'orders/base.html' %}
+
+{% block title %}My History{% endblock %}
+
+{% block content %}
+    <h1>Order and Expenses History</h1>
+
+    {% if error %}
+        <p>{{ error }}</p>
+    {% endif %}
+
+    <h2>Order History</h2>
+    {% if page_obj_orders %}
+        <h3>Aggregated Totals</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>Year</th>
+                    <th>Total Cost</th>
+                    <th>Trend (%)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for data in trend_data %}
+                    <tr>
+                        <td>{{ data.month }}</td>
+                        <td>{{ data.year }}</td>
+                        <td>Tsh.{{ data.total_cost }}</td>
+                        <td>
+                            {% if data.change is not None %}
+                                {% if data.change > 0 %}
+                                    <span style="color: green;">+{{ data.change|floatformat:2 }}%</span>
+                                {% elif data.change < 0 %}
+                                    <span style="color: red;">{{ data.change|floatformat:2 }}%</span>
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            {% else %}
+                                No previous data to compare
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <h3>Detailed Orders</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Date</th>
+                    <th>Total Cost</th>
+                    <th>Payment Method</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in page_obj_orders %}
+                    <tr>
+                        <td>{{ order.id }}</td>
+                        <td>{{ order.created }}</td>
+                        <td>Tsh.{{ order.total_cost }}</td>
+                        <td>{{ order.payment_method }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="pagination">
+            <span class="step-links">
+                {% if page_obj_orders.has_previous %}
+                    <a href="?page_orders=1">&laquo; first</a>
+                    <a href="?page_orders={{ page_obj_orders.previous_page_number }}">previous</a>
+                {% endif %}
+                
+                {% if page_obj_orders.has_next %}
+                    <a href="?page_orders={{ page_obj_orders.next_page_number }}">next</a>
+                    <a href="?page_orders={{ page_obj_orders.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+    {% else %}
+        <p>No orders found.</p>
+    {% endif %}
+
+    <h2>Expenses History</h2>
+    {% if page_obj_expenses %}
+        <h3>Aggregated Totals</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>Year</th>
+                    <th>Total Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for expense in aggregated_expenses %}
+                    <tr>
+                        <td>{{ expense.month }}</td>
+                        <td>{{ expense.year }}</td>
+                        <td>Tsh.{{ expense.total_amount }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h3>Detailed Expenses</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for expense in page_obj_expenses %}
+                    <tr>
+                        <td>{{ expense.date }}</td>
+                        <td>Tsh.{{ expense.amount }}</td>
+                        <td>{{ expense.description }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="pagination">
+            <span class="step-links">
+                {% if page_obj_expenses.has_previous %}
+                    <a href="?page_expenses=1">&laquo; first</a>
+                    <a href="?page_expenses={{ page_obj_expenses.previous_page_number }}">previous</a>
+                {% endif %}
+                
+                {% if page_obj_expenses.has_next %}
+                    <a href="?page_expenses={{ page_obj_expenses.next_page_number }}">next</a>
+                    <a href="?page_expenses={{ page_obj_expenses.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+    {% else %}
+        <p>No expenses found.</p>
+    {% endif %}
+{% endblock %}

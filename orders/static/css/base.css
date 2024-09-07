@@ -602,3 +602,50 @@ form div.field {
     visibility: visible;
 }
 
+/* Form styling */
+
+.order-form {
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.order-form .form-group {
+    margin-bottom: 15px;
+}
+
+.order-form .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.order-form .form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.order-form .error-message {
+    color: #ff0000;
+    margin-top: 5px;
+}
+
+.order-form .button {
+    background-color: #007bff;
+    color: #ffffff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.order-form .button:hover {
+    background-color: #0056b3;
+}
+
+
+

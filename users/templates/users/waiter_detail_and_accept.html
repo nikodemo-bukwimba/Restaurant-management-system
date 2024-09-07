@@ -1,0 +1,101 @@
+{% extends 'orders/base.html' %}
+
+{% block title %}Waiter Shift Details{% endblock %}
+
+{% block content %}
+    <h1>Shift Details for {{ waiter.name }}</h1>
+    
+    <!-- Display Shift Information -->
+    {% if shift %}
+        <div style="margin-bottom: 20px;">
+            <h2>Shift Information</h2>
+            <p>Shift for: {{ shift.waiter.name }}</p>
+            <p>Started at: {{ shift.start_time|date:"Y-m-d H:i" }}</p>
+            {% if shift.end_time %}
+                <p>Ended at: {{ shift.end_time|date:"Y-m-d H:i" }}</p>
+            {% else %}
+                <p>Status: Ongoing</p>
+            {% endif %}
+        </div>
+    {% else %}
+        <p>No active shift available.</p>
+    {% endif %}
+
+    <!-- View History Button -->
+    <div style="margin-bottom: 20px;">
+        <a href="{% url 'orders:waiter_history_with_id' waiter_id=waiter.id %}" class="btn btn-primary">View Waiter History</a>
+    </div>
+
+    {% if orders %}
+        <div class="table-container">
+            <table class="orders">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Created</th>
+                        <th>Total Cost</th>
+                        <th>Payment Method</th>
+                        <th>Sender Name</th>
+                        <th>Manager Confirmation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                        <tr>
+                            <td>{{ order.id }}</td>
+                            <td>{{ order.created|date:"d-m-Y H:i" }}</td>
+                            <td>Tsh.{{ order.get_total_cost }}</td>
+                            <td>{{ order.get_payment_method_display }}</td>
+                            <td>{{ order.sender_name }}</td>
+                            <td>
+                                {% if order.manager_confirmed %}
+                                    <span style="color:green;">Confirmed</span>
+                                {% else %}
+                                    <span style="color:red;">Pending</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- MAUZO Table -->
+        <h2>MAUZO</h2>
+        <div class="table-container">
+            <table style="width: 100%; border-collapse: collapse;">
+                <tbody>
+                    <tr style="background-color: #27272789; border-top: 2px solid #333;">
+                        <td colspan="2" style="padding: 10px; text-align: left; font-weight: bold;">Mauzo Jumla</td>
+                        <td style="padding: 10px; text-align: right;">Tsh.{{ total_sales }}</td>
+                    </tr>
+                    <tr style="background-color: #ffffff;">
+                        <td colspan="2" style="padding: 10px; text-align: left; font-weight: bold;">Lipa Namba</td>
+                        <td style="padding: 10px; text-align: right;">Tsh.{{ total_phone_payments }}</td>
+                    </tr>
+                    <tr style="background-color: #27272789;">
+                        <td colspan="2" style="padding: 10px; text-align: left; font-weight: bold;">Jumla ya Matumizi</td>
+                        <td style="padding: 10px; text-align: right;">Tsh.{{ total_expenses }}.00</td>
+                    </tr>
+                    <tr style="background-color: #004d00; color: white; border-top: 2px solid #333;">
+                        <td colspan="2" style="padding: 10px; text-align: left; font-weight: bold;">Kiasi Cha Kukabidhi</td>
+                        <td style="padding: 10px; text-align: right; font-weight: bold;">Tsh.{{ amount_to_submit }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>No orders for this shift.</p>
+    {% endif %}
+
+    <!-- Accept Sales Form -->
+    {% if shift and shift.end_time is None %}
+    <form method="post">
+        {% csrf_token %}
+        <div class="alert alert-warning" role="alert">
+            Are you sure you want to accept the sales for this shift and end it?
+        </div>
+        <button type="submit" name="accept_sales" class="btn btn-danger">Confirm and End Shift</button>
+    </form>
+    {% endif %}
+{% endblock %}

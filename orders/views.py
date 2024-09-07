@@ -9,11 +9,17 @@ from .forms import ExpenseForm
 from django.views.generic import TemplateView
 from django.views.generic import ListView
 from .models import Expense, Waiter  
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.utils import timezone
 from datetime import datetime, timedelta
 from decimal import Decimal
 from django.http import HttpResponseBadRequest
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.paginator import Paginator
+from django.db.models.functions import ExtractMonth, ExtractYear
+from users.models import Shift
+from oda.models import Order
+from .models import Expense
 
 def menu_item_list(request, category_slug=None):
     category = None
@@ -36,39 +42,50 @@ def menu_item_detail(request, id, slug):
     
     return render(request, 'orders/menu_item_detail.html',  {'menu_item': menu_item, 'cart_menu_item_form': cart_menu_item_form})
 
+
+@login_required
 def user_orders(request):
     today = timezone.now().date()
-    
-    # Get the waiter object linked to the current user
-    waiter = Waiter.objects.get(user=request.user)
-    
-    # Fetch all orders for today for the logged-in user (waiter)
-    orders = Order.objects.filter(user=request.user, created__date=today).order_by('-created')
-    
-    # Calculate total sales for today's orders
+
+    try:
+        waiter = Waiter.objects.get(user=request.user)
+    except Waiter.DoesNotExist:
+        return render(request, '404.html', {'message': 'Waiter not found.'})
+
+    shift = Shift.objects.filter(waiter=waiter, completed=False).last()
+
+    if shift:
+        # Fetch orders created by the waiter directly (user matches, assigned_waiter is null)
+        orders_created_by_waiter = Order.objects.filter(user=request.user, shift=shift, assigned_waiter__isnull=True)
+
+        # Fetch orders assigned to the waiter
+        orders_assigned_to_waiter = Order.objects.filter(assigned_waiter=waiter, shift=shift)
+
+        # Combine both querysets
+        orders = orders_created_by_waiter | orders_assigned_to_waiter
+        orders = orders.order_by('-created')
+    else:
+        orders = Order.objects.none()
+
     total_sales = sum(order.get_total_cost() for order in orders)
-    
-    # Calculate total phone payments (since phone payments go directly to the company)
     total_phone_payments = sum(order.get_total_cost() for order in orders if order.payment_method == 'phone')
-    
-    # Calculate total expenses for today for this waiter
+
     total_expenses = Expense.objects.filter(waiter=waiter, date=today).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
-    
-    # Calculate the amount to submit (total sales - total expenses - total phone payments)
+
     amount_to_submit = total_sales - total_expenses - total_phone_payments
-    
-    # Determine if there are any phone payments
     has_phone_payments = orders.filter(payment_method='phone').exists()
-    
-    return render(request, 'orders/user_orders.html', {
+
+    context = {
         'orders': orders,
         'total_sales': total_sales,
         'total_phone_payments': total_phone_payments,
         'total_expenses': total_expenses,
         'amount_to_submit': amount_to_submit,
         'has_phone_payments': has_phone_payments,
-    })
+        'shift': shift,
+    }
 
+    return render(request, 'orders/user_orders.html', context)
 
 @login_required
 def add_expense(request):
@@ -128,3 +145,141 @@ def update_payment_method(request, order_id):
     
     # Handle the case where the request method is not POST
     return HttpResponseBadRequest("Invalid request method")
+
+@login_required
+def waiter_history(request, waiter_id=None):
+    if waiter_id:
+        # Fetch the Waiter instance with this id
+        try:
+            waiter = Waiter.objects.get(id=waiter_id)
+        except Waiter.DoesNotExist:
+            return render(request, 'orders/waiter_history.html', {'error': 'Waiter not found.'})
+    else:
+        # Default behavior if no waiter_id is provided
+        try:
+            waiter = request.user.waiter
+        except AttributeError:
+            if request.user.is_manager:
+                waiter = None  # No specific waiter
+            else:
+                return render(request, 'orders/waiter_history.html', {'error': 'No waiter profile found for this user.'})
+
+    # Aggregate orders by month and year
+    if waiter:
+        # For a specific waiter
+        aggregated_orders = (
+            Order.objects.filter(
+                Q(user=waiter.user) | Q(assigned_waiter=waiter)
+            )
+            .annotate(month=ExtractMonth('created'), year=ExtractYear('created'))
+            .values('month', 'year')
+            .annotate(total_cost=Sum('total_cost'))
+            .order_by('year', 'month')
+        )
+        
+        # Get detailed orders
+        orders_details = (
+            Order.objects.filter(
+                Q(user=waiter.user) | Q(assigned_waiter=waiter)
+            )
+            .values('created', 'id', 'total_cost', 'payment_method')
+            .order_by('created')
+        )
+
+        # Aggregate expenses
+        aggregated_expenses = (
+            Expense.objects.filter(waiter=waiter)
+            .annotate(month=ExtractMonth('date'), year=ExtractYear('date'))
+            .values('month', 'year')
+            .annotate(total_amount=Sum('amount'))
+            .order_by('year', 'month')
+        )
+
+        # Get detailed expenses
+        expenses_details = (
+            Expense.objects.filter(waiter=waiter)
+            .values('date', 'amount', 'description')
+            .order_by('date')
+        )
+
+    else:
+        # If the viewer is a manager
+        aggregated_orders = (
+            Order.objects.filter(
+                Q(assigned_waiter__isnull=False)
+            )
+            .annotate(month=ExtractMonth('created'), year=ExtractYear('created'))
+            .values('month', 'year')
+            .annotate(total_cost=Sum('total_cost'))
+            .order_by('year', 'month')
+        )
+
+        orders_details = (
+            Order.objects.filter(
+                Q(assigned_waiter__isnull=False)
+            )
+            .values('created', 'id', 'total_cost', 'payment_method')
+            .order_by('created')
+        )
+
+        aggregated_expenses = (
+            Expense.objects.all()
+            .annotate(month=ExtractMonth('date'), year=ExtractYear('date'))
+            .values('month', 'year')
+            .annotate(total_amount=Sum('amount'))
+            .order_by('year', 'month')
+        )
+
+        expenses_details = (
+            Expense.objects.all()
+            .values('date', 'amount', 'description')
+            .order_by('date')
+        )
+
+    # Pagination for orders details
+    paginator_orders = Paginator(orders_details, 10)
+    page_number_orders = request.GET.get('page_orders')
+    page_obj_orders = paginator_orders.get_page(page_number_orders)
+
+    # Pagination for expenses details
+    paginator_expenses = Paginator(expenses_details, 10)
+    page_number_expenses = request.GET.get('page_expenses')
+    page_obj_expenses = paginator_expenses.get_page(page_number_expenses)
+
+    # Calculate monthly trends based on sales
+    trend_data = []
+    previous_total = None
+
+    for order in aggregated_orders:
+        current_total = order['total_cost']
+        if previous_total is not None:
+            change = (current_total - previous_total) / previous_total * 100
+            trend_data.append({
+                'month': order['month'],
+                'year': order['year'],
+                'total_cost': current_total,
+                'change': change
+            })
+        else:
+            trend_data.append({
+                'month': order['month'],
+                'year': order['year'],
+                'total_cost': current_total,
+                'change': None
+            })
+        previous_total = current_total
+
+    context = {
+        'aggregated_orders': aggregated_orders,
+        'aggregated_expenses': aggregated_expenses,
+        'page_obj_orders': page_obj_orders,
+        'page_obj_expenses': page_obj_expenses,
+        'trend_data': trend_data,
+    }
+
+    return render(request, 'orders/waiter_history.html', context)
+
+
+
+
+
