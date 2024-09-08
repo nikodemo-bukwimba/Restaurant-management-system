@@ -86,3 +86,41 @@ h2 {
         margin-bottom: 20px;
     }
 }
+/* Waiter List Section */
+.waiter-list h3 {
+    font-size: 1.8rem;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.list-group {
+    padding: 0;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.list-group-item {
+    border: none;
+    padding: 15px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #ddd;
+    transition: background-color 0.3s ease;
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa;
+}
+
+.list-group-item a {
+    color: #0056b3;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.list-group-item a:hover {
+    text-decoration: underline;
+}

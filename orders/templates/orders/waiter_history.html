@@ -12,60 +12,74 @@
     <h2>Order History</h2>
     {% if page_obj_orders %}
         <h3>Aggregated Totals</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Month</th>
-                    <th>Year</th>
-                    <th>Total Cost</th>
-                    <th>Trend (%)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for data in trend_data %}
+        <div class="table-container">
+            <table>
+                <thead>
                     <tr>
-                        <td>{{ data.month }}</td>
-                        <td>{{ data.year }}</td>
-                        <td>Tsh.{{ data.total_cost }}</td>
-                        <td>
-                            {% if data.change is not None %}
-                                {% if data.change > 0 %}
-                                    <span style="color: green;">+{{ data.change|floatformat:2 }}%</span>
-                                {% elif data.change < 0 %}
-                                    <span style="color: red;">{{ data.change|floatformat:2 }}%</span>
-                                {% else %}
-                                    0%
-                                {% endif %}
-                            {% else %}
-                                No previous data to compare
-                            {% endif %}
-                        </td>
+                        <th>Month</th>
+                        <th>Year</th>
+                        <th>Total Cost</th>
+                        <th>Trend (%)</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {% for data in trend_data %}
+                        <tr>
+                            <td>{{ data.month }}</td>
+                            <td>{{ data.year }}</td>
+                            <td>Tsh.{{ data.total_cost }}</td>
+                            <td>
+                                {% if data.change is not None %}
+                                    {% if data.change > 0 %}
+                                        <span style="color: green;">+{{ data.change|floatformat:2 }}%</span>
+                                    {% elif data.change < 0 %}
+                                        <span style="color: red;">{{ data.change|floatformat:2 }}%</span>
+                                    {% else %}
+                                        0%
+                                    {% endif %}
+                                {% else %}
+                                    No previous data to compare
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         
         <h3>Detailed Orders</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Order ID</th>
-                    <th>Date</th>
-                    <th>Total Cost</th>
-                    <th>Payment Method</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for order in page_obj_orders %}
+        <div class="table-container">
+            <table>
+                <thead>
                     <tr>
-                        <td>{{ order.id }}</td>
-                        <td>{{ order.created }}</td>
-                        <td>Tsh.{{ order.total_cost }}</td>
-                        <td>{{ order.payment_method }}</td>
+                        <th>Order ID</th>
+                        <th>Date</th>
+                        <th>Total Cost</th>
+                        <th>Payment Method</th>
+                        <th>Order Items</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {% for order in page_obj_orders %}
+                        <tr>
+                            <td>{{ order.id }}</td>
+                            <td>{{ order.created|date:"d-m-Y H:i" }}</td>
+                            <td>Tsh.{{ order.total_cost }}</td>
+                            <td>{{ order.payment_method }}</td>
+                            <td>
+                                <ul>
+                                    {% for item in order.items.all %}
+                                    <li>({{ item.menu_item.name }}) - Quantity: {{ item.quantity }} - Tsh.{{ item.get_cost }}</li>
+                                {% empty %}
+                                    <li>No items</li>
+                                {% endfor %}
+                                </ul>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
         <div class="pagination">
             <span class="step-links">
@@ -87,44 +101,48 @@
     <h2>Expenses History</h2>
     {% if page_obj_expenses %}
         <h3>Aggregated Totals</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Month</th>
-                    <th>Year</th>
-                    <th>Total Amount</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for expense in aggregated_expenses %}
+        <div class="table-container">
+            <table>
+                <thead>
                     <tr>
-                        <td>{{ expense.month }}</td>
-                        <td>{{ expense.year }}</td>
-                        <td>Tsh.{{ expense.total_amount }}</td>
+                        <th>Month</th>
+                        <th>Year</th>
+                        <th>Total Amount</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {% for expense in aggregated_expenses %}
+                        <tr>
+                            <td>{{ expense.month }}</td>
+                            <td>{{ expense.year }}</td>
+                            <td>Tsh.{{ expense.total_amount }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
         <h3>Detailed Expenses</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Amount</th>
-                    <th>Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for expense in page_obj_expenses %}
+        <div class="table-container">
+            <table>
+                <thead>
                     <tr>
-                        <td>{{ expense.date }}</td>
-                        <td>Tsh.{{ expense.amount }}</td>
-                        <td>{{ expense.description }}</td>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Description</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {% for expense in page_obj_expenses %}
+                        <tr>
+                            <td>{{ expense.date }}</td>
+                            <td>Tsh.{{ expense.amount }}</td>
+                            <td>{{ expense.description }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
         <div class="pagination">
             <span class="step-links">

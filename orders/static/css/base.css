@@ -6,6 +6,9 @@ body {
     padding: 0;
     font-family: 'Ubuntu', sans-serif;
     background-color: #f4f4f9;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Ensure the body takes up the full viewport height */
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -28,7 +31,7 @@ a.button, input[type="submit"] {
     border-radius: 4px;
     padding: 10px 20px;
     font-size: 14px;
-    border: 0;
+    border: none;
     cursor: pointer;
 }
 
@@ -169,7 +172,10 @@ ul.errorlist {
 /* Main Content */
 #content {
     padding: 0 100px;
+    padding-bottom: 80px; /* Ensure space for the footer */
+    margin-bottom: 60px; /* Ensure extra space between content and footer */
     overflow: hidden;
+    flex: 1; /* Allow content to grow and push footer down */
 }
 
 /* Sidebar Styles */
@@ -502,6 +508,93 @@ form div.field {
     background-color: #467a9c;
 }
 
+/* Footer Styles */
+#footer {
+    background-color: #000; /* Black background for footer */
+    color: #fff; /* White text color for contrast */
+    padding: 20px 0; /* Increased padding for better spacing */
+    text-align: center; /* Center-align text */
+    margin-top: auto; /* Push footer to the bottom */
+}
+
+/* Back to Top Button */
+#back-to-top {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s, visibility 0.3s;
+    visibility: hidden;
+}
+
+#back-to-top:hover {
+    background-color: #555;
+}
+
+#back-to-top i {
+    margin-top: 2px; /* Adjust as needed */
+}
+
+#back-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Form styling */
+.order-form {
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.order-form .form-group {
+    margin-bottom: 15px;
+}
+
+.order-form .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.order-form .form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.order-form .error-message {
+    color: #ff0000;
+    margin-top: 5px;
+}
+
+.order-form .button {
+    background-color: #007bff;
+    color: #ffffff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.order-form .button:hover {
+    background-color: #0056b3;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     #header, #subheader {
@@ -520,6 +613,8 @@ form div.field {
 
     #content {
         padding: 0 10px;
+        padding-bottom: 80px; /* Ensure space for the footer */
+        margin-bottom: 60px; /* Ensure extra space between content and footer */
     }
 
     #sidebar {
@@ -568,84 +663,18 @@ form div.field {
         }
     }
 }
-
-#back-to-top {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background-color: #333;
-    color: #fff;
-    border: none;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.3s, visibility 0.3s;
-    visibility: hidden;
+.custom-dashboard-btn {
+    background-color: #979a9c; /* Example blue background color */
+    border-color: #1a73e8; /* Matching border color */
+    color: white; /* Text color */
+    font-weight: bold; /* Make the text bold */
+    border-radius: 8px; /* Rounded corners */
+    padding: 10px 20px; /* Add padding */
+    transition: background-color 0.3s ease; /* Smooth hover transition */
 }
 
-#back-to-top:hover {
-    background-color: #555;
+.custom-dashboard-btn:hover {
+    background-color: #0d47a1; /* Darker blue on hover */
+    border-color: #0d47a1; /* Darker border on hover */
+    color: white; /* Keep text white */
 }
-
-#back-to-top i {
-    margin-top: 2px; /* Adjust as needed */
-}
-
-#back-to-top.visible {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* Form styling */
-
-.order-form {
-    margin-top: 20px;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-}
-
-.order-form .form-group {
-    margin-bottom: 15px;
-}
-
-.order-form .form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-.order-form .form-group select {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-}
-
-.order-form .error-message {
-    color: #ff0000;
-    margin-top: 5px;
-}
-
-.order-form .button {
-    background-color: #007bff;
-    color: #ffffff;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.order-form .button:hover {
-    background-color: #0056b3;
-}
-
-
-

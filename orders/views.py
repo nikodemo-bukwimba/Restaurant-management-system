@@ -149,24 +149,21 @@ def update_payment_method(request, order_id):
 @login_required
 def waiter_history(request, waiter_id=None):
     if waiter_id:
-        # Fetch the Waiter instance with this id
         try:
             waiter = Waiter.objects.get(id=waiter_id)
         except Waiter.DoesNotExist:
             return render(request, 'orders/waiter_history.html', {'error': 'Waiter not found.'})
     else:
-        # Default behavior if no waiter_id is provided
         try:
             waiter = request.user.waiter
         except AttributeError:
             if request.user.is_manager:
-                waiter = None  # No specific waiter
+                waiter = None
             else:
                 return render(request, 'orders/waiter_history.html', {'error': 'No waiter profile found for this user.'})
 
     # Aggregate orders by month and year
     if waiter:
-        # For a specific waiter
         aggregated_orders = (
             Order.objects.filter(
                 Q(user=waiter.user) | Q(assigned_waiter=waiter)
@@ -177,16 +174,15 @@ def waiter_history(request, waiter_id=None):
             .order_by('year', 'month')
         )
         
-        # Get detailed orders
         orders_details = (
             Order.objects.filter(
                 Q(user=waiter.user) | Q(assigned_waiter=waiter)
             )
+            .prefetch_related('items__menu_item')  # Efficiently fetch related items
             .values('created', 'id', 'total_cost', 'payment_method')
             .order_by('created')
         )
 
-        # Aggregate expenses
         aggregated_expenses = (
             Expense.objects.filter(waiter=waiter)
             .annotate(month=ExtractMonth('date'), year=ExtractYear('date'))
@@ -195,7 +191,6 @@ def waiter_history(request, waiter_id=None):
             .order_by('year', 'month')
         )
 
-        # Get detailed expenses
         expenses_details = (
             Expense.objects.filter(waiter=waiter)
             .values('date', 'amount', 'description')
@@ -203,7 +198,6 @@ def waiter_history(request, waiter_id=None):
         )
 
     else:
-        # If the viewer is a manager
         aggregated_orders = (
             Order.objects.filter(
                 Q(assigned_waiter__isnull=False)
@@ -218,6 +212,7 @@ def waiter_history(request, waiter_id=None):
             Order.objects.filter(
                 Q(assigned_waiter__isnull=False)
             )
+            .prefetch_related('items__menu_item')  # Efficiently fetch related items
             .values('created', 'id', 'total_cost', 'payment_method')
             .order_by('created')
         )
@@ -236,17 +231,14 @@ def waiter_history(request, waiter_id=None):
             .order_by('date')
         )
 
-    # Pagination for orders details
     paginator_orders = Paginator(orders_details, 10)
     page_number_orders = request.GET.get('page_orders')
     page_obj_orders = paginator_orders.get_page(page_number_orders)
 
-    # Pagination for expenses details
     paginator_expenses = Paginator(expenses_details, 10)
     page_number_expenses = request.GET.get('page_expenses')
     page_obj_expenses = paginator_expenses.get_page(page_number_expenses)
 
-    # Calculate monthly trends based on sales
     trend_data = []
     previous_total = None
 
@@ -278,8 +270,4 @@ def waiter_history(request, waiter_id=None):
     }
 
     return render(request, 'orders/waiter_history.html', context)
-
-
-
-
 

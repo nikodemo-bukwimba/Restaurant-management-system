@@ -18,7 +18,7 @@
         </div>
         <div class="col-md-4 mb-3">
             <div class="card bg-success text-white h-100">
-                <div class="card-header">jumla ya oda</div>
+                <div class="card-header">Jumla ya Oda</div>
                 <div class="card-body">
                     <h5 class="card-title text-center">{{ total_orders }}</h5>
                 </div>
@@ -26,7 +26,7 @@
         </div>
         <div class="col-md-4 mb-3">
             <div class="card bg-info text-white h-100">
-                <div class="card-header">Mauzo ya jumla</div>
+                <div class="card-header">Mauzo ya Jumla</div>
                 <div class="card-body">
                     <h5 class="card-title text-center">{{ total_sales }}</h5>
                 </div>
@@ -37,15 +37,24 @@
     <!-- Waiter List Section -->
     <div class="waiter-list mt-5">
         <h3 class="text-center">List of Waiters</h3>
-        <ul class="list-group">
+        <div class="row">
             {% for waiter in waiters_managed %}
-            <li class="list-group-item">
-                <a href="{% url 'users:waiter_detail_and_accept' waiter.id %}">{{ waiter.user.get_full_name }}</a>
-            </li>
+            <div class="col-md-4 mb-3">
+                <div class="card waiter-card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ waiter.user.get_full_name }}</h5>
+                        <a href="{% url 'users:waiter_detail_and_accept' waiter.id %}" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
             {% empty %}
-            <li class="list-group-item">No waiters found.</li>
+            <div class="col-12">
+                <div class="alert alert-info" role="alert">
+                    No waiters found.
+                </div>
+            </div>
             {% endfor %}
-        </ul>
+        </div>
     </div>
 </div>
 {% endblock %}

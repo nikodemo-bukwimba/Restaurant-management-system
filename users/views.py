@@ -7,7 +7,7 @@ from .models import Waiter, Manager, CEO
 from django.contrib.auth import authenticate, login
 from .forms import LoginForm
 from django.contrib.auth import authenticate, login as auth_login
-from oda.models import Order, Waiter, Manager, CEO
+from oda.models import Order, Waiter, Manager, CEO,OrderItem
 from orders.models import Expense
 from django.db.models import Sum
 from django.shortcuts import render, get_object_or_404, redirect
@@ -15,6 +15,8 @@ from .models import  Shift
 from django.utils import timezone
 from django.db import models
 from decimal import Decimal
+from orders.models import MenuItem
+from django.http import HttpResponseBadRequest
 
 def user_login(request):
     if request.method == 'POST':
@@ -41,7 +43,6 @@ def user_login(request):
         form = LoginForm()
     return render(request, 'users/login.html', {'form': form})
 
-
 @login_required
 def manager_dashboard(request):
     try:
@@ -49,8 +50,16 @@ def manager_dashboard(request):
     except Manager.DoesNotExist:
         return render(request, 'users/manager_dashboard.html', {'error': 'Manager profile not found.'})
 
+    # Get all waiters managed by this manager
     waiters_managed = Waiter.objects.filter(manager=manager)
-    orders = Order.objects.filter(user__in=waiters_managed.values_list('user', flat=True))
+
+    # Get the active shifts for these waiters
+    active_shifts = Shift.objects.filter(waiter__in=waiters_managed, completed=False)
+
+    # Filter orders that belong to these waiters and are in the active shift
+    orders = Order.objects.filter(shift__in=active_shifts)
+
+    # Calculate total sales from the orders within the active shift
     total_sales = orders.aggregate(total_sales=Sum('total_cost'))['total_sales'] or 0
 
     context = {
@@ -69,18 +78,16 @@ def ceo_dashboard(request):
     menu_items = MenuItem.objects.all()
     expenses = Expense.objects.all()
     orders = Order.objects.all()
-    sales = Sales.objects.all()
 
     context = {
         'waiters': waiters,
         'menu_items': menu_items,
         'expenses': expenses,
         'orders': orders,
-        'sales': sales,
         'is_ceo': True,  # Pass this to help display the dashboard link
         'is_manager': False,
     }
-    return render(request, 'ceo_dashboard.html', context)
+    return render(request, 'users/ceo_dashboard.html', context)
 
 @login_required
 def waiter_dashboard(request):
@@ -100,42 +107,81 @@ def waiter_detail_and_accept(request, waiter_id):
 
     if request.method == 'POST':
         if 'accept_sales' in request.POST and shift:
-            # End the current shift
             shift.completed = True
             shift.end_time = timezone.now()
             shift.save()
 
-            # Create a new shift
             new_shift = Shift(waiter=waiter, start_time=timezone.now())
             new_shift.save()
 
-            return redirect('users:manager_dashboard')  # Redirect after accepting sales
+            return redirect('users:manager_dashboard')
+
+        elif 'update_payment' in request.POST:
+            order_id = request.POST.get('update_payment')
+            try:
+                order = Order.objects.get(id=order_id)
+                payment_method = request.POST.get(f'payment_method_{order.id}')
+                order.payment_method = payment_method
+
+                if payment_method == 'phone':
+                    sender_name = request.POST.get(f'sender_name_{order.id}', '')
+                    order.sender_name = sender_name
+
+                order.save()
+            except Order.DoesNotExist:
+                return HttpResponseBadRequest("Order not found.")
+
+        elif 'confirm_order' in request.POST:
+            order_id = request.POST.get('confirm_order')
+            try:
+                order = Order.objects.get(id=order_id)
+                order.manager_confirmed = True
+                order.save()
+            except Order.DoesNotExist:
+                return HttpResponseBadRequest("Order not found.")
 
     if shift:
-        # Include orders where the waiter is either the assigned waiter or the order creator (user)
-        orders = Order.objects.filter(
-            shift=shift
-        ).filter(
-            models.Q(assigned_waiter=waiter) | models.Q(user=waiter.user)
+        # Fetch orders created by the waiter directly (user matches, assigned_waiter is null)
+        orders_created_by_waiter = Order.objects.filter(
+            user=waiter.user, shift=shift, assigned_waiter__isnull=True
         )
+
+        # Fetch orders assigned to the waiter
+        orders_assigned_to_waiter = Order.objects.filter(
+            assigned_waiter=waiter, shift=shift
+        )
+
+        # Combine both querysets
+        orders = orders_created_by_waiter | orders_assigned_to_waiter
+        orders = orders.order_by('-created')
+
+        total_sales = sum(order.get_total_cost() for order in orders)
+        total_phone_payments = sum(order.get_total_cost() for order in orders if order.payment_method == 'phone')
+
+        # Total expenses for the shift
+        total_expenses = Expense.objects.filter(waiter=waiter, date=today).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+
+        amount_to_submit = total_sales - total_expenses - total_phone_payments
+        has_phone_payments = orders.filter(payment_method='phone').exists()
     else:
-        orders = Order.objects.none()  # No active shift
+        orders = Order.objects.none()
+        total_sales = Decimal('0.00')
+        total_phone_payments = Decimal('0.00')
+        total_expenses = Decimal('0.00')
+        amount_to_submit = Decimal('0.00')
+        has_phone_payments = False
 
-    # Calculate financial details for this shift
-    total_sales = sum(order.get_total_cost() for order in orders)
-    total_phone_payments = sum(order.get_total_cost() for order in orders if order.payment_method == 'phone')
-    total_expenses = Expense.objects.filter(waiter=waiter, date=today).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
-    amount_to_submit = total_sales - total_expenses - total_phone_payments
-    has_phone_payments = orders.filter(payment_method='phone').exists()
-
-    return render(request, 'users/waiter_detail_and_accept.html', {
+    context = {
         'waiter': waiter,
-        'orders': orders,
         'shift': shift,
+        'orders': orders,
         'total_sales': total_sales,
         'total_phone_payments': total_phone_payments,
         'total_expenses': total_expenses,
         'amount_to_submit': amount_to_submit,
         'has_phone_payments': has_phone_payments,
-    })
+    }
+
+    return render(request, 'users/waiter_detail_and_accept.html', context)
+
 

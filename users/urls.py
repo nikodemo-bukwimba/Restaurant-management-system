@@ -8,7 +8,6 @@ urlpatterns = [
     path('', user_login, name='login'),
     path('waiter-history/', orders_views.waiter_history, name='waiter_history'),
     path('waiter/<int:waiter_id>/', waiter_detail_and_accept, name='waiter_detail_and_accept'),
-    # path('order/<int:order_id>/confirm/', confirm_order_payment, name='confirm_order_payment'),
     path('manager_dashboard/', manager_dashboard, name='manager_dashboard'),
     path('ceo-dashboard/', ceo_dashboard, name='ceo_dashboard'),
     path('waiter-dashboard/', waiter_dashboard, name='waiter_dashboard'),
