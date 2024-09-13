@@ -54,7 +54,7 @@
                                 <td>
                                     <ul>
                                         {% for item in order.items.all %}
-                                            <li>({{ item.menu_item.name }}) - Quantity: {{ item.quantity }} - Tsh.{{ item.get_cost }}</li>
+                                            <li>({{ item.menu_item.name }}) - Idadi: {{ item.quantity }} - Tsh.{{ item.get_cost }}</li>
                                         {% empty %}
                                             <li>No items</li>
                                         {% endfor %}

@@ -18,3 +18,11 @@ class ShiftAdmin(admin.ModelAdmin):
     list_display = ['waiter', 'start_time', 'end_time', 'completed']
     list_filter = ['completed', 'start_time']
     search_fields = ['waiter__name']
+
+from .models import Report
+
+class ReportAdmin(admin.ModelAdmin):
+    list_display = ['manager', 'created_at']  # Removed report_type, start_time, end_time
+    list_filter = ['created_at']  # Removed report_type from filters
+
+admin.site.register(Report, ReportAdmin)

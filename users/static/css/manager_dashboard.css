@@ -16,76 +16,96 @@ h2 {
 
 /* Card Section Styling */
 .card {
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    padding: 15px;
-    flex: 1; /* Allows cards to take equal space in a row */
-    margin-right: 20px;
-}
-
-.card:last-child {
-    margin-right: 0;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    padding: 10px;
+    background: linear-gradient(
+        135deg,
+        #bbdefb 25%, /* Light Blue */
+        #bbdefb 50%, /* Light Blue */
+        #a5d6a7 50%, /* Light Green */
+        #a5d6a7 75%, /* Light Green */
+        #fff9c4 75%, /* Light Yellow */
+        #fff9c4 100% /* Light Yellow */
+    );
+    /* Light Blue -> Light Green (Top right) -> Light Yellow (Bottom half) */
+    height: auto;
 }
 
 .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
 .card-header {
-    font-weight: 600;
-    text-transform: uppercase;
-    background-color: #f0f0f0;
-    padding: 8px;
-    font-size: 1rem;
-    letter-spacing: 1.2px;
+    font-weight: bold;
+    font-size: 18px;
+    background-color: #bbdefb; /* Light Blue background for the header */
+    border-bottom: 2px solid #343a40;
+    padding: 8px 12px;
+    color: #343a40;
 }
 
 .card-body {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.8rem;
-    padding: 15px;
+    padding: 10px 12px;
+    background-color: #ffffff; /* White background for the card body */
 }
 
-/* Colors for Different Cards */
-.bg-primary {
-    background-color: #0056b3; /* Darker Primary blue */
+.card-body h5 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #495057;
+    margin: 0;
 }
 
-.bg-success {
-    background-color: #218838; /* Darker Success green */
+/* Buttons */
+.btn-lg {
+    padding: 10px 20px;
+    font-size: 1.1rem;
+    font-weight: 500;
 }
 
-.bg-info {
-    background-color: #138496; /* Darker Info cyan */
+/* Table Hover Effect */
+.table-hover tbody tr:hover {
+    background-color: #f1f1f1;
 }
 
-/* Arrange Cards in Single Row */
+/* Arrange Cards in Single Row with Equal Spacing */
 .row {
     display: flex;
     justify-content: space-between;
-    flex-wrap: nowrap; /* Ensures the cards remain in a single row */
+    flex-wrap: nowrap; /* Ensures cards remain in a single row */
 }
 
-/* Spacing Between Columns */
 .row .col-md-4 {
-    margin-bottom: 0; /* Remove bottom margin for cards in a row */
+    flex: 1;
+    margin-right: 15px; /* Equal spacing between cards */
 }
 
-/* Responsive Layout */
-@media (max-width: 1200px) {
+.row .col-md-4:last-child {
+    margin-right: 0;
+}
+
+/* Responsive Design for Cards */
+@media (max-width: 767.98px) {
     .row {
-        flex-wrap: wrap; /* Stacks cards when the screen is smaller */
+        flex-direction: column; /* Stacks cards in a column on small devices */
+        align-items: center; /* Center align cards in a column */
     }
 
-    .col-md-4 {
-        flex: 1 1 100%; /* Cards take up full width on smaller screens */
+    .row .col-md-4 {
+        width: 100%; /* Full width for each card on small devices */
+        margin-bottom: 20px; /* Space between stacked cards */
+    }
+
+    .card {
         margin-bottom: 20px;
     }
+
+    .card-body h5 {
+        font-size: 1.5rem;
+    }
 }
+
 /* Waiter List Section */
 .waiter-list h3 {
     font-size: 1.8rem;
@@ -93,34 +113,12 @@ h2 {
     margin-bottom: 20px;
 }
 
-.list-group {
-    padding: 0;
-    border-radius: 8px;
+.waiter-card {
+    border: 1px solid #ddd;
+    background: #fff;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.list-group-item {
-    border: none;
-    padding: 15px;
-    background-color: #ffffff;
-    border-bottom: 1px solid #ddd;
-    transition: background-color 0.3s ease;
-}
-
-.list-group-item:last-child {
-    border-bottom: none;
-}
-
-.list-group-item:hover {
-    background-color: #f8f9fa;
-}
-
-.list-group-item a {
-    color: #0056b3;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-.list-group-item a:hover {
-    text-decoration: underline;
+.waiter-card .card-body {
+    text-align: center;
 }

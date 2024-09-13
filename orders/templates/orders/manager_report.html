@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Manager Report</title>
+    <style>
+        body { 
+            font-family: 'Arial', sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background-color: #f4f4f4; 
+            color: #333;
+        }
+        .container {
+            width: 80%; 
+            margin: auto; 
+            background: #fff; 
+            padding: 20px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        h1 { 
+            text-align: center; 
+            color: #444; 
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 20px 0; 
+        }
+        th, td { 
+            padding: 12px; 
+            border: 1px solid #ddd; 
+            text-align: left; 
+        }
+        th { 
+            background-color: #e0e0e0; 
+            color: #333; 
+        }
+        tr:nth-child(even) { 
+            background-color: #fafafa; 
+        }
+        tr:hover { 
+            background-color: #f0f0f0; 
+        }
+        .btn-primary { 
+            display: inline-block; 
+            padding: 12px 24px; 
+            font-size: 16px; 
+            color: #fff; 
+            background-color: #007bff; 
+            border: none; 
+            border-radius: 5px; 
+            text-decoration: none; 
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .btn-primary:hover { 
+            background-color: #0056b3; 
+        }
+        .section-title {
+            margin-top: 30px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 5px;
+            color: #333;
+        }
+        h3 { 
+            color: #444; 
+            margin-top: 20px; 
+        }
+        /* Message Styles */
+        .messages {
+            list-style-type: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+        .messages li {
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #d4edda; /* Light green for success messages */
+            color: #155724;
+            opacity: 1;
+            transition: opacity 0.5s ease-out; /* Smooth fade-out effect */
+        }
+        .messages .success {
+            background-color: #d4edda; /* Bootstrap green for success */
+            color: #155724;
+        }
+        /* Hide the button in print or PDF view */
+        @media print {
+            .btn-primary {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        <h1>Manager Report</h1>
+
+        <!-- Button to download PDF (hidden in print) -->
+        <a href="{% url 'orders:download_manager_report_pdf' %}" class="btn-primary">Download PDF</a>
+
+        <form action="{% url 'orders:save_manager_report' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Save Report</button>
+        </form>
+
+        <!-- Share via Email -->
+        <a href="mailto:?subject=Manager Report&body=Here is the manager report: {{ request.build_absolute_uri }}" class="btn-primary">Share Report via Email</a>
+
+        <!-- Share via WhatsApp -->
+        <a href="https://wa.me/?text=Here%20is%20the%20manager%20report%20{{ request.build_absolute_uri }}" class="btn-primary">Share on WhatsApp</a>
+
+        <h2 class="section-title">Summary</h2>
+        <table>
+            <tr>
+                <th>Total Orders</th>
+                <td>{{ orders_by_waiter|length }}</td>
+            </tr>
+            <tr>
+                <th>Total Sales</th>
+                <td>Tsh.{{ total_sales }}</td>
+            </tr>
+            <tr>
+                <th>Total Payment by Phone</th>
+                <td>Tsh.{{ total_phone_payments }}</td>
+            </tr>
+            <tr>
+                <th>Total Expenses</th>
+                <td>Tsh.{{ total_expenses }}</td>
+            </tr>
+            <tr>
+                <th>Total Amount to Submit</th>
+                <td>Tsh.{{ amount_to_submit }}</td>
+            </tr>
+        </table>
+        <h2 class="section-title">Expenses Details</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Waiter</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for expense in expenses %}
+                    <tr>
+                        <td>{{ expense.waiter.user.first_name }} {{ expense.waiter.user.last_name }}</td>
+                        <td>{{ expense.date }}</td>
+                        <td>Tsh.{{ expense.amount }}</td>
+                        <td>{{ expense.description }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h2 class="section-title">Orders Details</h2>
+        {% for waiter, orders_list in orders_by_waiter.items %}
+            <h3>Waiter: {{ waiter.user.first_name }} {{ waiter.user.last_name }}</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Created</th>
+                        <th>Total Cost</th>
+                        <th>Payment Method</th>
+                        <th>Sender Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders_list %}
+                        <tr>
+                            <td>{{ order.id }}</td>
+                            <td>{{ order.created }}</td>
+                            <td>Tsh.{{ order.total_cost }}</td>
+                            <td>{{ order.get_payment_method_display }}</td>
+                            <td>{{ order.sender_name }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endfor %}
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get all messages
+            var messages = document.querySelectorAll('.messages li');
+            messages.forEach(function(message) {
+                // Set timeout to fade out each message after 5 seconds (5000ms)
+                setTimeout(function() {
+                    message.style.opacity = '0';
+                    // Optional: Remove the message from the DOM after fading out
+                    setTimeout(function() {
+                        message.remove();
+                    }, 500); // Match this with the transition duration
+                }, 5000);
+            });
+        });
+    </script>
+</body>
+</html>

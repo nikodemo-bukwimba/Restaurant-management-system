@@ -1,0 +1,49 @@
+{% extends "orders/base.html" %}
+
+{% block title %}
+    Manage Waiters
+{% endblock %}
+
+{% block content %}
+    <div class="manage-waiters">
+        <h1>Manage Waiters</h1>
+
+        {% if waiters %}
+            <table class="waiters-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Current Shift</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for waiter in waiters %}
+                        <tr>
+                            <td>{{ waiter.id }}</td>
+                            <td>{{ waiter.name }}</td>
+                            <td>{{ waiter.email }}</td>
+                            <td>{{ waiter.phone }}</td>
+                            <td>
+                                {% if waiter.is_active_shift %}
+                                    Active ({{ waiter.current_shift_time }})
+                                {% else %}
+                                    Not Active
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'users:waiter_detail' waiter.id %}" class="btn">View</a>
+                                <a href="{% url 'users:waiter_edit' waiter.id %}" class="btn">Edit</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No waiters available.</p>
+        {% endif %}
+    </div>
+{% endblock %}

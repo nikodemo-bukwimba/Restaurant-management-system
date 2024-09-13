@@ -1,0 +1,12 @@
+{% extends "orders/base.html" %}
+
+{% block title %}Edit Waiter{% endblock %}
+
+{% block content %}
+<h1>Edit Waiter</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save</button>
+</form>
+{% endblock %}

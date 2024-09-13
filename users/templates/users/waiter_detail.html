@@ -1,0 +1,9 @@
+{% extends "orders/base.html" %}
+
+{% block title %}{{ waiter.name }}{% endblock %}
+
+{% block content %}
+<h1>{{ waiter.name }}</h1>
+<p>Manager: {{ waiter.manager }}</p>
+<p>User: {{ waiter.user }}</p>
+{% endblock %}

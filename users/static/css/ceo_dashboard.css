@@ -1,0 +1,96 @@
+/* General Container Styling */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Center the Title */
+.dashboard-header {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #343a40;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* Card Section Styling */
+.card {
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    padding: 10px;
+    background: linear-gradient(
+        135deg,
+        #bbdefb 25%, /* Light Blue */
+        #c8e6c9 25%, /* Light Green */
+        #c8e6c9 50%, /* Light Green */
+        #fff9c4 50%, /* Light Yellow */
+        #fff9c4 100% /* Light Yellow */
+    );
+    height: auto;
+}
+
+.card:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    font-weight: bold;
+    font-size: 18px;
+    background-color: #bbdefb; /* Light Blue */
+    border-bottom: 2px solid #343a40;
+    padding: 8px 12px;
+    color: #343a40;
+}
+
+.card-body {
+    padding: 10px 12px;
+    background-color: #ffffff; /* White */
+}
+
+.card-body h5 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #495057;
+    margin: 0;
+}
+
+/* Buttons */
+.btn-lg {
+    padding: 10px 20px;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+/* Table Hover Effect */
+.table-hover tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Responsive Design for Cards */
+.row {
+    display: flex;
+    flex-wrap: wrap; /* Allows cards to wrap onto new lines */
+}
+
+.col-lg-4, .col-md-6 {
+    flex: 1;
+    margin-bottom: 20px;
+}
+
+/* Full Width Sections */
+.col-12 {
+    flex: 0 0 100%;
+    max-width: 100%;
+}
+
+/* Responsive Design for Smaller Devices */
+@media (max-width: 767.98px) {
+    .row {
+        flex-direction: column; /* Stack cards vertically on small screens */
+    }
+
+    .card-body h5 {
+        font-size: 1.5rem; /* Adjust font size for smaller screens */
+    }
+}

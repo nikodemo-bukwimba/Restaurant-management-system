@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 class Manager(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -32,3 +33,9 @@ class Shift(models.Model):
 
     def __str__(self):
         return f"Shift for {self.waiter.name} - {'Completed' if self.completed else 'Ongoing'}"
+
+
+class Report(models.Model):
+    manager = models.ForeignKey(User, on_delete=models.CASCADE)
+    report_data = models.JSONField()  # Store report data in JSON format
+    created_at = models.DateTimeField(default=timezone.now)

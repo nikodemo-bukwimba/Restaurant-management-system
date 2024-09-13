@@ -25,4 +25,3 @@ class ExpenseAdmin(admin.ModelAdmin):
     list_display = ('waiter', 'amount', 'description', 'date')
     list_filter = ('waiter', 'date')
     search_fields = ('description',)
-

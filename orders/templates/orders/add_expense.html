@@ -6,9 +6,32 @@
         <div class="expense-form-container">
             <form method="post" class="expense-form">
                 {% csrf_token %}
-                {{ form.as_p }}
+                {{ form.as_p }}  <!-- This will include the waiter dropdown -->
                 <button type="submit" class="btn-submit">Submit</button>
             </form>
         </div>
     </div>
 {% endblock %}
+
+@login_required
+def add_expense(request):
+    try:
+        # Attempt to get the waiter object associated with the logged-in user
+        waiter = request.user.waiter
+    except ObjectDoesNotExist:
+        # Handle the case where the user does not have an associated waiter object
+        messages.error(request, "Wewe sio mhudumu, Tafadhali wasiliana na manager")
+        return redirect('orders:menu_item_list')  # Redirect to a relevant page
+    
+    if request.method == 'POST':
+        form = ExpenseForm(request.POST)
+        if form.is_valid():
+            expense = form.save(commit=False)
+            expense.waiter = waiter  # Link expense to the logged-in waiter
+            expense.save()
+            messages.success(request, "Expense added successfully.")
+            return redirect('orders:menu_item_list')  # Redirect after successful form submission
+    else:
+        form = ExpenseForm()
+    
+    return render(request, 'orders/add_expense.html', {'form': form})

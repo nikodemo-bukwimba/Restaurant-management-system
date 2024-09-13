@@ -17,6 +17,7 @@ from django.db import models
 from decimal import Decimal
 from orders.models import MenuItem
 from django.http import HttpResponseBadRequest
+from .forms import WaiterForm
 
 def user_login(request):
     if request.method == 'POST':
@@ -79,12 +80,24 @@ def ceo_dashboard(request):
     expenses = Expense.objects.all()
     orders = Order.objects.all()
 
+    # Example data for charts and tables (replace with actual calculations and queries)
+    total_sales = orders.aggregate(Sum('total_cost'))['total_cost__sum'] or 0
+    recent_orders = orders.order_by('-created')[:10]  # Fetch recent 10 orders
+    top_waiters = (
+        Waiter.objects
+        .annotate(total_sales=Sum('order__total_cost'))
+        .order_by('-total_sales')[:10]  # Top 5 waiters by sales
+    )
+
     context = {
         'waiters': waiters,
         'menu_items': menu_items,
         'expenses': expenses,
         'orders': orders,
-        'is_ceo': True,  # Pass this to help display the dashboard link
+        'total_sales': total_sales,
+        'recent_orders': recent_orders,
+        'top_waiters': top_waiters,
+        'is_ceo': True,
         'is_manager': False,
     }
     return render(request, 'users/ceo_dashboard.html', context)
@@ -102,16 +115,19 @@ def waiter_dashboard(request):
 @login_required
 def waiter_detail_and_accept(request, waiter_id):
     waiter = get_object_or_404(Waiter, id=waiter_id)
-    today = timezone.now().date()
-    shift = Shift.objects.filter(waiter=waiter, completed=False).last()
+    now = timezone.now()
+
+    # Get the active shift (shift with no end time)
+    shift = Shift.objects.filter(waiter=waiter, end_time__isnull=True).last()
 
     if request.method == 'POST':
         if 'accept_sales' in request.POST and shift:
             shift.completed = True
-            shift.end_time = timezone.now()
+            shift.end_time = now
             shift.save()
 
-            new_shift = Shift(waiter=waiter, start_time=timezone.now())
+            # Create a new shift for the waiter
+            new_shift = Shift(waiter=waiter, start_time=now)
             new_shift.save()
 
             return redirect('users:manager_dashboard')
@@ -158,8 +174,21 @@ def waiter_detail_and_accept(request, waiter_id):
         total_sales = sum(order.get_total_cost() for order in orders)
         total_phone_payments = sum(order.get_total_cost() for order in orders if order.payment_method == 'phone')
 
-        # Total expenses for the shift
-        total_expenses = Expense.objects.filter(waiter=waiter, date=today).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        # Total expenses for the active shift
+        if shift.end_time:
+            # For completed shifts
+            total_expenses = Expense.objects.filter(
+                waiter=waiter,
+                date__range=[shift.start_time.date(), shift.end_time.date()],
+                time__range=[shift.start_time.time(), shift.end_time.time()]
+            ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        else:
+            # For ongoing shifts
+            total_expenses = Expense.objects.filter(
+                waiter=waiter,
+                date=shift.start_time.date(),
+                time__range=[shift.start_time.time(), now.time()]
+            ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
 
         amount_to_submit = total_sales - total_expenses - total_phone_payments
         has_phone_payments = orders.filter(payment_method='phone').exists()
@@ -184,4 +213,20 @@ def waiter_detail_and_accept(request, waiter_id):
 
     return render(request, 'users/waiter_detail_and_accept.html', context)
 
+def waiter_detail(request, id):
+    waiter = get_object_or_404(Waiter, id=id)
+    return render(request, 'users/waiter_detail.html', {'waiter': waiter})
+
+
+def waiter_edit(request, id):
+    waiter = get_object_or_404(Waiter, id=id)
+    if request.method == 'POST':
+        form = WaiterForm(request.POST, instance=waiter)
+        if form.is_valid():
+            form.save()
+            return redirect('orders:manage_waiters')  # or any other URL you want to redirect to
+    else:
+        form = WaiterForm(instance=waiter)
+    
+    return render(request, 'users/waiter_edit.html', {'form': form, 'waiter': waiter})
 

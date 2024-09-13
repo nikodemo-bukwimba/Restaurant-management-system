@@ -1,5 +1,4 @@
 {% extends 'orders/base.html' %}
-
 {% load static %}
 
 {% block content %}
@@ -9,7 +8,7 @@
     <!-- Overview Cards Section -->
     <div class="row">
         <div class="col-md-4 mb-3">
-            <div class="card bg-primary text-white h-100">
+            <div class="card bg-primary text-white">
                 <div class="card-header">Wahudumu</div>
                 <div class="card-body">
                     <h5 class="card-title text-center">{{ waiters_managed.count }}</h5>
@@ -17,7 +16,7 @@
             </div>
         </div>
         <div class="col-md-4 mb-3">
-            <div class="card bg-success text-white h-100">
+            <div class="card bg-success text-white">
                 <div class="card-header">Jumla ya Oda</div>
                 <div class="card-body">
                     <h5 class="card-title text-center">{{ total_orders }}</h5>
@@ -25,13 +24,18 @@
             </div>
         </div>
         <div class="col-md-4 mb-3">
-            <div class="card bg-info text-white h-100">
+            <div class="card bg-info text-white">
                 <div class="card-header">Mauzo ya Jumla</div>
                 <div class="card-body">
                     <h5 class="card-title text-center">{{ total_sales }}</h5>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Button to Generate Report -->
+    <div class="text-center mt-4">
+        <a href="{% url 'orders:generate_manager_report' %}" class="btn btn-primary">Generate Report</a>
     </div>
 
     <!-- Waiter List Section -->

@@ -5,7 +5,7 @@ from cart.forms import CartAddMenuItemForm
 from oda.models import Order
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from .forms import ExpenseForm
+# from .forms import ExpenseForm
 from django.views.generic import TemplateView
 from django.views.generic import ListView
 from .models import Expense, Waiter  
@@ -18,8 +18,11 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.db.models.functions import ExtractMonth, ExtractYear
 from users.models import Shift
-from oda.models import Order
-from .models import Expense
+from django.contrib import messages
+from .forms import ExpenseForm , ExpenseFormForManager 
+from users.models import Manager,Report
+from .forms import MenuItemForm 
+from io import BytesIO
 
 def menu_item_list(request, category_slug=None):
     category = None
@@ -45,13 +48,14 @@ def menu_item_detail(request, id, slug):
 
 @login_required
 def user_orders(request):
-    today = timezone.now().date()
+    now = timezone.now()
 
     try:
         waiter = Waiter.objects.get(user=request.user)
     except Waiter.DoesNotExist:
         return render(request, '404.html', {'message': 'Waiter not found.'})
 
+    # Get the active shift for the waiter
     shift = Shift.objects.filter(waiter=waiter, completed=False).last()
 
     if shift:
@@ -64,42 +68,173 @@ def user_orders(request):
         # Combine both querysets
         orders = orders_created_by_waiter | orders_assigned_to_waiter
         orders = orders.order_by('-created')
+
+        # Calculate total sales and phone payments
+        total_sales = sum(order.get_total_cost() for order in orders)
+        total_phone_payments = sum(order.get_total_cost() for order in orders if order.payment_method == 'phone')
+
+        # Filter expenses by the active shift
+        if shift.end_time:
+            # For completed shifts
+            total_expenses = Expense.objects.filter(
+                waiter=waiter,
+                date__range=[shift.start_time.date(), shift.end_time.date()],
+                time__range=[shift.start_time.time(), shift.end_time.time()]
+            ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        else:
+            # For ongoing shifts
+            total_expenses = Expense.objects.filter(
+                waiter=waiter,
+                date=shift.start_time.date(),
+                time__range=[shift.start_time.time(), now.time()]
+            ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+
+        # Calculate the amount to submit
+        amount_to_submit = total_sales - total_expenses - total_phone_payments
+        has_phone_payments = orders.filter(payment_method='phone').exists()
+
+        context = {
+            'orders': orders,
+            'total_sales': total_sales,
+            'total_phone_payments': total_phone_payments,
+            'total_expenses': total_expenses,
+            'amount_to_submit': amount_to_submit,
+            'has_phone_payments': has_phone_payments,
+            'shift': shift,
+        }
     else:
-        orders = Order.objects.none()
-
-    total_sales = sum(order.get_total_cost() for order in orders)
-    total_phone_payments = sum(order.get_total_cost() for order in orders if order.payment_method == 'phone')
-
-    total_expenses = Expense.objects.filter(waiter=waiter, date=today).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
-
-    amount_to_submit = total_sales - total_expenses - total_phone_payments
-    has_phone_payments = orders.filter(payment_method='phone').exists()
-
-    context = {
-        'orders': orders,
-        'total_sales': total_sales,
-        'total_phone_payments': total_phone_payments,
-        'total_expenses': total_expenses,
-        'amount_to_submit': amount_to_submit,
-        'has_phone_payments': has_phone_payments,
-        'shift': shift,
-    }
+        # No active shift found
+        context = {
+            'orders': Order.objects.none(),
+            'total_sales': Decimal('0.00'),
+            'total_phone_payments': Decimal('0.00'),
+            'total_expenses': Decimal('0.00'),
+            'amount_to_submit': Decimal('0.00'),
+            'has_phone_payments': False,
+            'shift': None,
+        }
 
     return render(request, 'orders/user_orders.html', context)
 
 @login_required
 def add_expense(request):
-    if request.method == 'POST':
-        form = ExpenseForm(request.POST)
-        if form.is_valid():
-            expense = form.save(commit=False)
-            expense.waiter = request.user.waiter  # Link expense to the logged-in waiter
-            expense.save()
-            # Optionally update the waiter's total sales here
-            return redirect('orders:menu_item_list')  # Redirect to a relevant page
+    try:
+        # Check if the user is a manager
+        manager = Manager.objects.get(user=request.user)
+        is_manager = True
+    except Manager.DoesNotExist:
+        is_manager = False
+
+    if is_manager:
+        # Manager-specific logic
+        if request.method == 'POST':
+            form = ExpenseFormForManager(request.POST)
+            if form.is_valid():
+                expense = form.save(commit=False)
+                waiter = form.cleaned_data.get('waiter')
+
+                # Check for the active shift of the waiter (shift with no end time)
+                active_shift = Shift.objects.filter(waiter=waiter, end_time__isnull=True).first()
+
+                if not active_shift:
+                    messages.error(request, "The selected waiter has no active shift.")
+                    return redirect('orders:add_expense')
+
+                # Calculate total cash sales for the active shift
+                total_cash_sales = Order.objects.filter(
+                    shift=active_shift,
+                    payment_method='cash'
+                ).aggregate(
+                    total_sales=Sum('total_cost')
+                )['total_sales'] or Decimal('0.00')
+
+                # Get total existing expenses for the current shift
+                existing_expenses = Expense.objects.filter(
+                    waiter=waiter,
+                    date=active_shift.start_time.date(),
+                    time__range=[active_shift.start_time.time(), timezone.now().time()]
+                ).aggregate(
+                    total_expenses=Sum('amount')
+                )['total_expenses'] or Decimal('0.00')
+
+                # Calculate the remaining cash available for expenses
+                remaining_cash = total_cash_sales - existing_expenses
+
+                if remaining_cash <= 0:
+                    messages.error(request, "The waiter has no available cash sales for further expenses.")
+                    return redirect('orders:add_expense')
+
+                # Check if the new expense exceeds the remaining cash
+                if expense.amount > remaining_cash:
+                    messages.error(request, f"The expense exceeds the available cash. Maximum allowable expense is {remaining_cash}.")
+                    return redirect('orders:add_expense')
+
+                # Save the expense and assign to the waiter
+                expense.waiter = waiter
+                expense.save()
+                messages.success(request, "Expense assigned successfully to the waiter.")
+                return redirect('orders:menu_item_list')
+        else:
+            form = ExpenseFormForManager()  # Form for managers with waiter selection
     else:
-        form = ExpenseForm()
+        # Waiter-specific logic
+        try:
+            waiter = request.user.waiter
+        except Waiter.DoesNotExist:
+            messages.error(request, "You are not a waiter. Please contact your manager.")
+            return redirect('orders:menu_item_list')
+
+        if request.method == 'POST':
+            form = ExpenseForm(request.POST)
+            if form.is_valid():
+                expense = form.save(commit=False)
+
+                # Check for the active shift of the waiter
+                active_shift = Shift.objects.filter(waiter=waiter, end_time__isnull=True).first()
+
+                if not active_shift:
+                    messages.error(request, "You have no active shift.")
+                    return redirect('orders:add_expense')
+
+                # Calculate total cash sales for the active shift
+                total_cash_sales = Order.objects.filter(
+                    shift=active_shift,
+                    payment_method='cash'
+                ).aggregate(
+                    total_sales=Sum('total_cost')
+                )['total_sales'] or Decimal('0.00')
+
+                # Get total existing expenses for the current shift
+                existing_expenses = Expense.objects.filter(
+                    waiter=waiter,
+                    date=active_shift.start_time.date(),
+                    time__range=[active_shift.start_time.time(), timezone.now().time()]
+                ).aggregate(
+                    total_expenses=Sum('amount')
+                )['total_expenses'] or Decimal('0.00')
+
+                # Calculate remaining cash for expenses
+                remaining_cash = total_cash_sales - existing_expenses
+
+                if remaining_cash <= 0:
+                    messages.error(request, "You have no available cash sales for further expenses.")
+                    return redirect('orders:add_expense')
+
+                # Ensure the expense doesn't exceed remaining cash
+                if expense.amount > remaining_cash:
+                    messages.error(request, f"The expense exceeds your available cash. Maximum allowable expense is {remaining_cash}.")
+                    return redirect('orders:add_expense')
+
+                # Save the expense and assign to the waiter
+                expense.waiter = waiter
+                expense.save()
+                messages.success(request, "Expense added successfully.")
+                return redirect('orders:menu_item_list')
+        else:
+            form = ExpenseForm()  # Form for waiters without waiter selection
+
     return render(request, 'orders/add_expense.html', {'form': form})
+
 
 @login_required
 def waiter_expenses(request):
@@ -271,3 +406,215 @@ def waiter_history(request, waiter_id=None):
 
     return render(request, 'orders/waiter_history.html', context)
 
+from django.urls import reverse
+
+@login_required
+def generate_manager_report(request):
+    today = timezone.now().date()
+
+    # Fetch the current manager
+    try:
+        manager = Manager.objects.get(user=request.user)
+    except Manager.DoesNotExist:
+        return {'error': 'Manager not found'}
+
+    # Get all waiters managed by this manager
+    waiters_managed = Waiter.objects.filter(manager=manager)
+
+    # Get all completed shifts for today
+    shifts = Shift.objects.filter(waiter__in=waiters_managed, completed=True)
+
+    # Fetch only orders that have not been included in any report yet
+    unreported_orders = Order.objects.filter(shift__in=shifts, reported=False)
+
+    # Aggregate totals for sales and phone payments
+    total_sales = unreported_orders.aggregate(total_sales=Sum('total_cost'))['total_sales'] or Decimal('0.00')
+    total_phone_payments = unreported_orders.filter(payment_method='phone').aggregate(
+        total=Sum('total_cost'))['total'] or Decimal('0.00')
+
+    # Get IDs of expenses already included in previous reports
+    previous_reports = Report.objects.filter(manager=request.user).values_list('report_data', flat=True)
+    previous_expense_ids = []
+
+    for report_data in previous_reports:
+        if isinstance(report_data, dict):
+            previous_expense_ids.extend(report_data.get('expenses', []))
+    
+    # Fetch all expenses related to closed shifts, excluding previously reported expenses
+    total_expenses = Expense.objects.filter(waiter__in=waiters_managed, date=today).exclude(id__in=previous_expense_ids).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+
+    # Calculate the amount to submit to the CEO
+    amount_to_submit = total_sales - total_expenses - total_phone_payments
+
+    # Create context
+    context = {
+        'orders_by_waiter': {waiter: unreported_orders.filter(shift__waiter=waiter) for waiter in waiters_managed},
+        'total_sales': total_sales,
+        'total_phone_payments': total_phone_payments,
+        'total_expenses': total_expenses,
+        'amount_to_submit': amount_to_submit,
+        'expenses': Expense.objects.filter(
+            waiter__in=waiters_managed,
+            shift__in=shifts,
+            date=today).exclude(id__in=previous_expense_ids)
+    }
+
+    return context
+
+@login_required
+def generate_manager_report_view(request):
+    context = generate_manager_report(request)  # This should return a dictionary
+
+    if isinstance(context, dict) and 'error' not in context:
+        return render(request, 'orders/manager_report.html', context)  # Render it as HTML and return HttpResponse
+    else:
+        # Handle the error if the context contains an error message or is not a dict
+        return HttpResponse('Error generating report', status=500)
+
+
+from django.contrib.auth.decorators import login_required
+from users.models import Report
+
+
+@login_required
+def save_manager_report(request):
+    if request.method == 'POST':
+        today = timezone.now().date()
+
+        # Get the current manager and managed waiters
+        try:
+            manager = Manager.objects.get(user=request.user)
+        except Manager.DoesNotExist:
+            return render(request, '404.html', {'message': 'Manager not found.'})
+
+        waiters_managed = Waiter.objects.filter(manager=manager)
+
+        # Get all completed shifts for today
+        shifts = Shift.objects.filter(waiter__in=waiters_managed, completed=True)
+
+        # Fetch only orders that have not been included in any report yet
+        unreported_orders = Order.objects.filter(shift__in=shifts, reported=False)
+
+        # Aggregate totals for sales and phone payments
+        total_sales = unreported_orders.aggregate(total_sales=Sum('total_cost'))['total_sales'] or Decimal('0.00')
+        total_phone_payments = unreported_orders.filter(payment_method='phone').aggregate(
+            total=Sum('total_cost'))['total'] or Decimal('0.00')
+
+        # Get the IDs of expenses already included in previous reports
+        previous_reports = Report.objects.filter(manager=request.user).values_list('report_data', flat=True)
+        previous_expense_ids = []
+        
+        for report_data in previous_reports:
+            if isinstance(report_data, dict):
+                previous_expense_ids.extend(report_data.get('expenses', []))
+        
+        # Filter out these expenses
+        total_expenses = Expense.objects.filter(waiter__in=waiters_managed, date=today).exclude(id__in=previous_expense_ids).aggregate(
+            total=Sum('amount'))['total'] or Decimal('0.00')
+
+        # Calculate amount to submit to the CEO
+        amount_to_submit = total_sales - total_expenses - total_phone_payments
+
+        # Create or update the Report object
+        report = Report.objects.create(
+            manager=request.user,
+            report_data={
+                'total_sales': str(total_sales),
+                'total_phone_payments': str(total_phone_payments),
+                'total_expenses': str(total_expenses),
+                'amount_to_submit': str(amount_to_submit),
+                # Add other relevant data
+                'expenses': list(Expense.objects.filter(waiter__in=waiters_managed, date=today).exclude(id__in=previous_expense_ids).values_list('id', flat=True))
+            }
+        )
+
+        # Mark the included orders as reported
+        unreported_orders.update(reported=True)
+
+        # Add a success message
+        messages.success(request, 'Report has been successfully saved!')
+
+        return redirect('orders:generate_manager_report')  # Redirect to an appropriate page after saving
+
+    return render(request, '404.html', {'message': 'Invalid request method.'})
+
+
+
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from xhtml2pdf import pisa
+from io import BytesIO
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def download_manager_report_pdf(request):
+    # Get the context data from generate_manager_report
+    context = generate_manager_report(request)
+    
+    # Render the HTML to a string using the context data
+    html_string = render_to_string('orders/manager_report.html', context)
+    
+    # Create PDF
+    result = BytesIO()
+    pdf = pisa.CreatePDF(BytesIO(html_string.encode("UTF-8")), dest=result)
+    
+    if pdf.err:
+        return HttpResponse('Error generating PDF', status=500)
+    
+    # Prepare PDF response
+    pdf_response = HttpResponse(result.getvalue(), content_type='application/pdf')
+    pdf_response['Content-Disposition'] = 'attachment; filename="manager_report.pdf"'
+    
+    return pdf_response
+
+
+@login_required
+def add_menu_item(request):
+    if request.method == 'POST':
+        form = MenuItemForm(request.POST, request.FILES)
+        if form.is_valid():
+            menu_item = form.save()
+            return redirect('orders:menu_item_detail', id=menu_item.id, slug=menu_item.slug)
+    else:
+        form = MenuItemForm()
+
+    return render(request, 'orders/add_menu_item.html', {'form': form})
+
+# orders/views.py
+from django.shortcuts import render
+from oda.models import Order, OrderItem, MenuItem
+from django.db.models import Sum, F
+
+def detailed_sales_report(request):
+    # Aggregate total sales by calculating the sum of (price * quantity) for each order item
+    total_sales = OrderItem.objects.aggregate(
+        total_sales=Sum(F('price') * F('quantity'))
+    )['total_sales'] or 0
+    
+    # Aggregate total sales by category by calculating the sum of (price * quantity) grouped by category
+    sales_by_category = OrderItem.objects.values('menu_item__category__name').annotate(
+        total_sales=Sum(F('price') * F('quantity'))
+    ).order_by('menu_item__category__name')
+
+    # Retrieve recent orders
+    recent_orders = Order.objects.order_by('-created')[:10]
+
+    # Prepare context for the template
+    context = {
+        'total_sales': total_sales,
+        'sales_by_category': sales_by_category,
+        'recent_orders': recent_orders,
+    }
+
+    return render(request, 'orders/detailed_sales_report.html', context)
+
+# users/views.py
+from django.shortcuts import render
+from .models import Waiter
+
+def manage_waiters(request):
+    waiters = Waiter.objects.all()
+    context = {
+        'waiters': waiters,
+    }
+    return render(request, 'users/manage_waiters.html', context)

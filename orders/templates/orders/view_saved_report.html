@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Report Details</title>
+    <style>
+        body { 
+            font-family: 'Arial', sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background-color: #f4f4f4; 
+            color: #333;
+        }
+        .container {
+            width: 80%; 
+            margin: auto; 
+            background: #fff; 
+            padding: 20px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        h1 { 
+            text-align: center; 
+            color: #444; 
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 20px 0; 
+        }
+        th, td { 
+            padding: 12px; 
+            border: 1px solid #ddd; 
+            text-align: left; 
+        }
+        th { 
+            background-color: #e0e0e0; 
+            color: #333; 
+        }
+        tr:nth-child(even) { 
+            background-color: #fafafa; 
+        }
+        tr:hover { 
+            background-color: #f0f0f0; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Report Details</h1>
+        
+        <!-- Display report details -->
+        <p><strong>Report Type:</strong> {{ report.report_type }}</p>
+        <p><strong>Start Time:</strong> {{ report.start_time }}</p>
+        <p><strong>End Time:</strong> {{ report.end_time }}</p>
+        <p><strong>Created At:</strong> {{ report.created_at }}</p>
+        
+        <!-- Display summary in a table -->
+        <h2>Summary</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Total Sales</th>
+                    <th>Total Phone Payments</th>
+                    <th>Total Expenses</th>
+                    <th>Amount to Submit</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Tsh.{{ total_sales }}</td>
+                    <td>Tsh.{{ total_phone_payments }}</td>
+                    <td>Tsh.{{ total_expenses }}</td>
+                    <td>Tsh.{{ amount_to_submit }}</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <!-- Display detailed data for orders by waiter -->
+        <h2>Orders by Waiter</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Waiter</th>
+                    <th>Order Count</th>
+                    <th>Total Sales</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for waiter, data in orders_by_waiter.items %}
+                    <tr>
+                        <td>{{ waiter.user.first_name }} {{ waiter.user.last_name }}</td>
+                        <td>{{ data.order_count }}</td>
+                        <td>Tsh.{{ data.total_sales }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Display expenses in a table -->
+        <h2>Expenses Details</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Waiter</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for expense in expenses %}
+                    <tr>
+                        <td>{{ expense.waiter.user.first_name }} {{ expense.waiter.user.last_name }}</td>
+                        <td>{{ expense.date }}</td>
+                        <td>Tsh.{{ expense.amount }}</td>
+                        <td>{{ expense.description }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

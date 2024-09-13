@@ -2,76 +2,71 @@
 {% load static %}
 
 {% block content %}
-<h2>CEO Dashboard</h2>
+<h2 class="dashboard-header">CEO Dashboard</h2>
 
 <!-- Overview Cards Section -->
-<div class="row">
-    <div class="col-md-4">
-        <div class="card text-white bg-primary mb-3">
+<div class="row mb-4">
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="card text-white bg-darkblue shadow">
             <div class="card-header">Total Waiters</div>
             <div class="card-body">
-                <h5 class="card-title">{{ waiters.count }}</h5>
+                <h5 class="card-title display-4">{{ waiters.count }}</h5>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card text-white bg-success mb-3">
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="card text-white bg-teal shadow">
             <div class="card-header">Total Menu Items</div>
             <div class="card-body">
-                <h5 class="card-title">{{ menu_items.count }}</h5>
+                <h5 class="card-title display-4">{{ menu_items.count }}</h5>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card text-white bg-danger mb-3">
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="card text-white bg-muted-red shadow">
             <div class="card-header">Total Expenses</div>
             <div class="card-body">
-                <h5 class="card-title">{{ expenses.count }}</h5>
+                <h5 class="card-title display-4">{{ expenses.count }}</h5>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card text-white bg-info mb-3">
+</div>
+
+<div class="row mb-4">
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="card text-white bg-skyblue shadow">
             <div class="card-header">Total Orders</div>
             <div class="card-body">
-                <h5 class="card-title">{{ orders.count }}</h5>
+                <h5 class="card-title display-4">{{ orders.count }}</h5>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card text-white bg-warning mb-3">
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="card text-white bg-lightyellow shadow">
             <div class="card-header">Total Sales</div>
             <div class="card-body">
-                <h5 class="card-title">{{ sales.count }}</h5>
+                <h5 class="card-title display-4">Tsh.{{ total_sales }}</h5>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Charts Section -->
-<div class="row mt-4">
-    <!-- Sales Trends Chart -->
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">Sales Trends</div>
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header bg-lightgray">Sales Trends</div>
             <div class="card-body">
                 <canvas id="salesTrendsChart"></canvas>
             </div>
         </div>
     </div>
-    <!-- Expenses Distribution Chart -->
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">Expenses Distribution</div>
-            <div class="card-body">
-                <canvas id="expensesDistributionChart"></canvas>
-            </div>
-        </div>
-    </div>
-    <!-- Popular Menu Items Chart -->
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">Popular Menu Items</div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header bg-lightgray">Popular Menu Items</div>
             <div class="card-body">
                 <canvas id="popularMenuItemsChart"></canvas>
             </div>
@@ -79,49 +74,39 @@
     </div>
 </div>
 
-<!-- Tables Section -->
-<div class="row mt-4">
-    <!-- Recent Orders Table -->
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">Recent Orders</div>
+<!-- Quick Actions Section -->
+<div class="row mb-4 text-center">
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="card shadow">
             <div class="card-body">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Order ID</th>
-                            <th>Waiter</th>
-                            <th>Menu Item</th>
-                            <th>Amount</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for order in recent_orders %}
-                            <tr>
-                                <td>{{ order.id }}</td>
-                                <td>{{ order.waiter }}</td>
-                                <td>{{ order.menu_item }}</td>
-                                <td>${{ order.amount }}</td>
-                                <td>{{ order.date }}</td>
-                            </tr>
-                        {% empty %}
-                            <tr>
-                                <td colspan="5" class="text-center">No recent orders</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <a href="{% url 'orders:add_menu_item' %}" class="btn btn-primary btn-lg btn-block">Add New Menu Item</a>
             </div>
         </div>
     </div>
-    <!-- Top-performing Waiters Table -->
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">Top-performing Waiters by Sales</div>
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="card shadow">
             <div class="card-body">
-                <table class="table table-striped">
-                    <thead>
+                <a href="{% url 'orders:detailed_sales_report' %}" class="btn btn-secondary btn-lg btn-block">View Detailed Sales Report</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="card shadow">
+            <div class="card-body">
+                <a href="{% url 'orders:manage_waiters' %}" class="btn btn-success btn-lg btn-block">Manage Waiters</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tables Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header bg-darkblue text-white">Top-performing Waiters by Sales</div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead class="thead-dark">
                         <tr>
                             <th>Waiter</th>
                             <th>Total Sales</th>
@@ -130,8 +115,8 @@
                     <tbody>
                         {% for waiter in top_waiters %}
                             <tr>
-                                <td>{{ waiter.name }}</td>
-                                <td>${{ waiter.total_sales }}</td>
+                                <td>{{ waiter.user.get_full_name }}</td>
+                                <td>Tsh.{{ waiter.total_sales }}</td>
                             </tr>
                         {% empty %}
                             <tr>
@@ -144,35 +129,13 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
-<!-- Quick Actions Section -->
-<div class="row mt-4">
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body text-center">
-                <a href="{% url 'orders:add_menu_item' %}" class="btn btn-primary btn-lg">Add New Menu Item</a>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body text-center">
-                <a href="{% url 'detailed_sales_report' %}" class="btn btn-secondary btn-lg">View Detailed Sales Report</a>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body text-center">
-                <a href="{% url 'manage_waiters' %}" class="btn btn-success btn-lg">Manage Waiters</a>
-            </div>
-        </div>
-    </div>
-</div>
-
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/ceo_dashboard.css' %}">
 {% endblock %}
 
 {% block extra_js %}
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="{% static 'js/ceo_dashboard.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'js/ceo_dashboard.js' %}"></script>
 {% endblock %}

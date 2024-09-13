@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth import authenticate
+from .models import Waiter
 
 
 class LoginForm(forms.Form):
@@ -16,3 +17,8 @@ class LoginForm(forms.Form):
             if not user:
                 raise forms.ValidationError("Invalid login")
         return cleaned_data
+
+class WaiterForm(forms.ModelForm):
+    class Meta:
+        model = Waiter
+        fields = ['name', 'manager']  # List all the fields you want to include in the form

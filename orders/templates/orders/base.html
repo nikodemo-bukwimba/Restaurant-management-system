@@ -31,6 +31,10 @@
 
             <!-- Restaurant Logo -->
             <a href="{% url 'orders:menu_item_list' %}" class="logo">Restaurant</a>
+            <form action="{% url 'users:logout' %}" method="post" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-light logout-button">Toka</button>
+            </form>
         </div>
 
         <!-- Sidebar Menu -->
