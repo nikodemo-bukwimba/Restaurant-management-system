@@ -3,6 +3,7 @@
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
+    position: relative; /* For positioning the generate report button */
 }
 
 /* Center the Title */
@@ -12,6 +13,26 @@ h2 {
     color: #444;
     text-align: center;
     margin-bottom: 30px;
+}
+
+/* Button Sizes */
+.btn-lg {
+    padding: 12px 24px;
+    font-size: 1.2rem; /* Larger font size */
+    font-weight: 500;
+}
+
+.btn-sm {
+    padding: 8px 16px;
+    font-size: 0.9rem; /* Smaller font size */
+    font-weight: 400;
+}
+
+/* Generate Report Button Position */
+.generate-report-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
 }
 
 /* Card Section Styling */
@@ -28,7 +49,6 @@ h2 {
         #fff9c4 75%, /* Light Yellow */
         #fff9c4 100% /* Light Yellow */
     );
-    /* Light Blue -> Light Green (Top right) -> Light Yellow (Bottom half) */
     height: auto;
 }
 
@@ -57,13 +77,27 @@ h2 {
     margin: 0;
 }
 
-/* Buttons */
-.btn-lg {
-    padding: 10px 20px;
+.btn-primary {
+    background-color: #228B22; /* Primary button color */
+    color: #ffffff; /* White text color */
+    border: none;
+    border-radius: 5px;
+    padding: 12px 15px;
     font-size: 1.1rem;
     font-weight: 500;
+    text-transform: uppercase;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
+.btn-primary:hover {
+    background-color: #1e7e1e; /* Darker shade on hover */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:focus, .btn-primary:active {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(34, 139, 34, 0.5); /* Focus ring */
+}
 /* Table Hover Effect */
 .table-hover tbody tr:hover {
     background-color: #f1f1f1;
@@ -117,8 +151,32 @@ h2 {
     border: 1px solid #ddd;
     background: #fff;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px; /* Space between waiter cards */
+    border-radius: 8px; /* Rounded corners */
 }
 
+/* Card Body Styling */
 .waiter-card .card-body {
+    padding: 15px; /* Increased padding */
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Space between elements */
+}
+
+/* Waiter Name Styling */
+.waiter-card .card-body .card-title {
+    font-size: 1.5rem; /* Adjust font size */
+    margin-bottom: 15px; /* Space below the name */
+}
+
+/* View Details Button Styling */
+.waiter-card .card-body .btn-primary {
+    font-size: 0.9rem; /* Smaller font size for view button */
+    padding: 8px 16px;
+    margin-top: 15px; /* Space above the button */
+}
+
+.custom-button-container {
+    margin-bottom: 2rem; /* Adjust as needed */
 }

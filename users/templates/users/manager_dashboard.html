@@ -3,7 +3,12 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4 text-center">Manager Dashboard</h2>
+    <h2 class="mb-4 text-center">Dashibodi ya Meneja</h2>
+
+    <!-- Button to Generate Report -->
+    <div class="text-center custom-button-container"> <!-- Added custom class -->
+        <a href="{% url 'orders:generate_manager_report' %}" class="btn btn-primary btn-lg">Generate Report</a>
+    </div>
 
     <!-- Overview Cards Section -->
     <div class="row">
@@ -32,22 +37,18 @@
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Button to Generate Report -->
-    <div class="text-center mt-4">
-        <a href="{% url 'orders:generate_manager_report' %}" class="btn btn-primary">Generate Report</a>
-    </div>
-
-    <!-- Waiter List Section -->
+        <!-- Waiter List Section -->
     <div class="waiter-list mt-5">
-        <h3 class="text-center">List of Waiters</h3>
+        <h3 class="text-center">Orodha ya Wahudumu</h3>
         <div class="row">
             {% for waiter in waiters_managed %}
             <div class="col-md-4 mb-3">
                 <div class="card waiter-card">
                     <div class="card-body">
                         <h5 class="card-title">{{ waiter.user.get_full_name }}</h5>
-                        <a href="{% url 'users:waiter_detail_and_accept' waiter.id %}" class="btn btn-primary">View Details</a>
+                        <a href="{% url 'users:waiter_detail_and_accept' waiter.id %}" class="btn btn-primary">Tizama</a>
                     </div>
                 </div>
             </div>

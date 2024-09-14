@@ -30,7 +30,7 @@
             {% endif %}
 
             <!-- Restaurant Logo -->
-            <a href="{% url 'orders:menu_item_list' %}" class="logo">Restaurant</a>
+            <a href="{% url 'orders:menu_item_list' %}" class="logo btn btn-outline-light">Restaurant</a>
             <form action="{% url 'users:logout' %}" method="post" style="display: inline;">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-outline-light logout-button">Toka</button>
@@ -74,8 +74,7 @@
 
     <!-- Main Content Block -->
     <main id="content">
-        {% block content %}
-        {% endblock %}
+        {% block content %}{% endblock %}
     </main>
 
     <!-- Footer -->
