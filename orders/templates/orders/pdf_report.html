@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Manager Report</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        .container {
+            width: 100%;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #444;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #e0e0e0;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .section-title {
+            margin-top: 20px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>RIPOTI YA MENEJA</h1>
+        <p><strong>Imetengenezwa:</strong> {{ report.created_at }}</p>
+        <h2 class="section-title">Muhtasari</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Jumla ya Mauzo</th>
+                    <th>Jumla ya Lipa Namba</th>
+                    <th>Jumla ya Matumizi</th>
+                    <th>Kiwango Cha Kukabidhi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Tsh.{{ total_sales }}</td>
+                    <td>Tsh.{{ total_phone_payments }}</td>
+                    <td>Tsh.{{ total_expenses }}</td>
+                    <td>Tsh.{{ amount_to_submit }}</td>
+                </tr>
+            </tbody>
+        </table>
+        <h2 class="section-title">Oda Za Wahudumu</h2>
+        {% for waiter, orders in orders_by_waiter.items %}
+            <h3>Mhudumu: {{ waiter.user.first_name }} {{ waiter.user.last_name }}</h3>
+            <p>Idadi ya Oda: {{ orders.count }}</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Oda No.</th>
+                        <th>Imewekwa</th>
+                        <th>Kiasi cha</th>
+                        <th>Aina ya Malipo</th>
+                        <th>Jina la Mtumaji</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                        <tr>
+                            <td>{{ order.id }}</td>
+                            <td>{{ order.created }}</td>
+                            <td>Tsh.{{ order.total_cost }}</td>
+                            <td>{{ order.get_payment_method_display }}</td>
+                            <td>{{ order.sender_name }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endfor %}
+        <h2 class="section-title">Matumizi ya Wahudumu</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Mhudumu</th>
+                    <th>Tarehe</th>
+                    <th>Kiasi</th>
+                    <th>Maelezo</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for expense in expenses %}
+                    <tr>
+                        <td>{{ expense.waiter.user.first_name }} {{ expense.waiter.user.last_name }}</td>
+                        <td>{{ expense.date }}</td>
+                        <td>Tsh.{{ expense.amount }}</td>
+                        <td>{{ expense.description }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

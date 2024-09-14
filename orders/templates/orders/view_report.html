@@ -23,6 +23,26 @@
             text-align: center; 
             color: #444; 
         }
+        .btn-container {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        .btn-primary {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            text-decoration: none;
+            color: #fff;
+            background-color: #007bff;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
         table { 
             width: 100%; 
             border-collapse: collapse; 
@@ -49,15 +69,27 @@
             padding-bottom: 5px;
             color: #333;
         }
+        .created-at {
+            text-align: right;
+            margin-bottom: 20px;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Report Details</h1>
-        
+        <!-- Action Buttons -->
+        <div class="btn-container">
+            <a href="{% url 'orders:download_manager_report_pdf' report.id %}" class="btn-primary">Download PDF</a> 
+            <a href="mailto:?subject=Manager Report&body=Here is the manager report: {{ request.build_absolute_uri }}" class="btn-primary">Share Report via Email</a>
+            <a href="https://wa.me/?text=Here%20is%20the%20manager%20report%20{{ request.build_absolute_uri }}" class="btn-primary">Share on WhatsApp</a>
+        </div>
+
         <!-- Display report details -->
-        <p><strong>Created At:</strong> {{ report.created_at }}</p>
-        
+        <div class="created-at">
+            <strong>Created At:</strong> {{ report.created_at }}
+        </div>
+
         <!-- Display summary in a table -->
         <h2 class="section-title">Summary</h2>
         <table>

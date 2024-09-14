@@ -555,29 +555,59 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from xhtml2pdf import pisa
 from io import BytesIO
+from weasyprint import HTML
+from django.template.loader import get_template
 from django.contrib.auth.decorators import login_required
 
 @login_required
-def download_manager_report_pdf(request):
-    # Get the context data from generate_manager_report
-    context = generate_manager_report(request)
-    context['is_pdf'] = True  # Add this flag to the context
+def download_manager_report_pdf(request, report_id):
+    # Retrieve the report
+    report = get_object_or_404(Report, id=report_id)
     
-    # Render the HTML to a string using the context data
-    html_string = render_to_string('orders/manager_report.html', context)
+    # Extract data from the report
+    report_data = report.report_data
+    total_sales = report_data.get('total_sales', 0)
+    total_phone_payments = report_data.get('total_phone_payments', 0)
+    total_expenses = report_data.get('total_expenses', 0)
+    amount_to_submit = report_data.get('amount_to_submit', 0)
+    expenses_ids = report_data.get('expenses', [])
+    orders_by_waiter_data = report_data.get('orders_by_waiter', {})
+    
+    # Fetch detailed expense data
+    expense_details = Expense.objects.filter(id__in=expenses_ids)
+    
+    # Fetch detailed order data and filter out waiters with no orders
+    orders_by_waiter = {}
+    for waiter_id, order_ids in orders_by_waiter_data.items():
+        if order_ids:  # Only include waiters with orders
+            waiter = Waiter.objects.get(id=waiter_id)
+            orders = Order.objects.filter(id__in=order_ids)
+            if orders.exists():  # Ensure the waiter has orders
+                orders_by_waiter[waiter] = orders
+    
+    # Prepare the context for the PDF
+    context = {
+        'report': report,
+        'total_sales': total_sales,
+        'total_phone_payments': total_phone_payments,
+        'total_expenses': total_expenses,
+        'amount_to_submit': amount_to_submit,
+        'orders_by_waiter': orders_by_waiter,
+        'expenses': expense_details
+    }
+    
+    # Load the template
+    template = get_template('orders/pdf_report.html')
+    html_content = template.render(context)
     
     # Create PDF
-    result = BytesIO()
-    pdf = pisa.CreatePDF(BytesIO(html_string.encode("UTF-8")), dest=result)
+    pdf = HTML(string=html_content).write_pdf()
     
-    if pdf.err:
-        return HttpResponse('Error generating PDF', status=500)
+    # Prepare response
+    response = HttpResponse(pdf, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="manager_report_{report_id}.pdf"'
     
-    # Prepare PDF response
-    pdf_response = HttpResponse(result.getvalue(), content_type='application/pdf')
-    pdf_response['Content-Disposition'] = 'attachment; filename="manager_report.pdf"'
-    
-    return pdf_response
+    return response
 
 
 #View saved report list

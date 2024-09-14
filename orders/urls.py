@@ -12,7 +12,7 @@ urlpatterns = [
      # Report Generation and Saving
     path('generate_report/', views.generate_manager_report_view, name='generate_manager_report'),
     path('save_report/', views.save_manager_report, name='save_manager_report'),
-    path('download_report/', views.download_manager_report_pdf, name='download_manager_report_pdf'),
+    path('download_report/<int:report_id>/', views.download_manager_report_pdf, name='download_manager_report_pdf'),
 
     # Report List and Viewing
     path('report/list/', views.view_report_list, name='view_report_list'),
