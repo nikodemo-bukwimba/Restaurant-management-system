@@ -175,10 +175,11 @@ def waiter_detail_and_accept(request, waiter_id):
         total_phone_payments = sum(order.get_total_cost() for order in orders if order.payment_method == 'phone')
 
         # Total expenses for the active shift
-        if shift.end_time:
+        if shift.completed:
             # For completed shifts
             total_expenses = Expense.objects.filter(
                 waiter=waiter,
+                shift=shift,
                 date__range=[shift.start_time.date(), shift.end_time.date()],
                 time__range=[shift.start_time.time(), shift.end_time.time()]
             ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
@@ -186,6 +187,7 @@ def waiter_detail_and_accept(request, waiter_id):
             # For ongoing shifts
             total_expenses = Expense.objects.filter(
                 waiter=waiter,
+                shift=shift,
                 date=shift.start_time.date(),
                 time__range=[shift.start_time.time(), now.time()]
             ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')

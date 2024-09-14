@@ -29,6 +29,7 @@ class ExpenseFormForManager(forms.ModelForm):
         model = Expense
         fields = ['amount', 'description', 'waiter']
 
+
   #MenuItem form
 class MenuItemForm(forms.ModelForm):
     class Meta:

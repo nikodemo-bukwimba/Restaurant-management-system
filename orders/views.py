@@ -116,6 +116,7 @@ def user_orders(request):
 
     return render(request, 'orders/user_orders.html', context)
 
+
 @login_required
 def add_expense(request):
     try:
@@ -133,16 +134,16 @@ def add_expense(request):
                 expense = form.save(commit=False)
                 waiter = form.cleaned_data.get('waiter')
 
-                # Check for the active shift of the waiter (shift with no end time)
-                active_shift = Shift.objects.filter(waiter=waiter, end_time__isnull=True).first()
+                # Fetch the latest active shift for the selected waiter
+                shift = Shift.objects.filter(waiter=waiter, end_time__isnull=True).last()
 
-                if not active_shift:
-                    messages.error(request, "The selected waiter has no active shift.")
+                if not shift:
+                    messages.error(request, "The selected waiter does not have an active shift.")
                     return redirect('orders:add_expense')
 
                 # Calculate total cash sales for the active shift
                 total_cash_sales = Order.objects.filter(
-                    shift=active_shift,
+                    shift=shift,
                     payment_method='cash'
                 ).aggregate(
                     total_sales=Sum('total_cost')
@@ -151,8 +152,8 @@ def add_expense(request):
                 # Get total existing expenses for the current shift
                 existing_expenses = Expense.objects.filter(
                     waiter=waiter,
-                    date=active_shift.start_time.date(),
-                    time__range=[active_shift.start_time.time(), timezone.now().time()]
+                    shift=shift,
+                    date=expense.date
                 ).aggregate(
                     total_expenses=Sum('amount')
                 )['total_expenses'] or Decimal('0.00')
@@ -169,8 +170,9 @@ def add_expense(request):
                     messages.error(request, f"The expense exceeds the available cash. Maximum allowable expense is {remaining_cash}.")
                     return redirect('orders:add_expense')
 
-                # Save the expense and assign to the waiter
+                # Save the expense and assign to the waiter and shift
                 expense.waiter = waiter
+                expense.shift = shift
                 expense.save()
                 messages.success(request, "Expense assigned successfully to the waiter.")
                 return redirect('orders:menu_item_list')
@@ -185,20 +187,20 @@ def add_expense(request):
             return redirect('orders:menu_item_list')
 
         if request.method == 'POST':
-            form = ExpenseForm(request.POST)
+            form = ExpenseForm(request.POST, manager=None)
             if form.is_valid():
                 expense = form.save(commit=False)
 
-                # Check for the active shift of the waiter
-                active_shift = Shift.objects.filter(waiter=waiter, end_time__isnull=True).first()
+                # Fetch the latest active shift for the current waiter
+                shift = Shift.objects.filter(waiter=waiter, end_time__isnull=True).last()
 
-                if not active_shift:
-                    messages.error(request, "You have no active shift.")
+                if not shift:
+                    messages.error(request, "You do not have an active shift.")
                     return redirect('orders:add_expense')
 
                 # Calculate total cash sales for the active shift
                 total_cash_sales = Order.objects.filter(
-                    shift=active_shift,
+                    shift=shift,
                     payment_method='cash'
                 ).aggregate(
                     total_sales=Sum('total_cost')
@@ -207,8 +209,8 @@ def add_expense(request):
                 # Get total existing expenses for the current shift
                 existing_expenses = Expense.objects.filter(
                     waiter=waiter,
-                    date=active_shift.start_time.date(),
-                    time__range=[active_shift.start_time.time(), timezone.now().time()]
+                    shift=shift,
+                    date=expense.date
                 ).aggregate(
                     total_expenses=Sum('amount')
                 )['total_expenses'] or Decimal('0.00')
@@ -225,16 +227,16 @@ def add_expense(request):
                     messages.error(request, f"The expense exceeds your available cash. Maximum allowable expense is {remaining_cash}.")
                     return redirect('orders:add_expense')
 
-                # Save the expense and assign to the waiter
+                # Save the expense and assign to the waiter and shift
                 expense.waiter = waiter
+                expense.shift = shift
                 expense.save()
                 messages.success(request, "Expense added successfully.")
                 return redirect('orders:menu_item_list')
         else:
-            form = ExpenseForm()  # Form for waiters without waiter selection
+            form = ExpenseForm(manager=None)  # Form for waiters without waiter selection
 
     return render(request, 'orders/add_expense.html', {'form': form})
-
 
 @login_required
 def waiter_expenses(request):
@@ -433,15 +435,16 @@ def generate_manager_report(request):
         total=Sum('total_cost'))['total'] or Decimal('0.00')
 
     # Get IDs of expenses already included in previous reports
-    previous_reports = Report.objects.filter(manager=request.user).values_list('report_data', flat=True)
-    previous_expense_ids = []
+    # previous_reports = Report.objects.filter(manager=request.user).values_list('report_data', flat=True)
+    # previous_expense_ids = []
 
-    for report_data in previous_reports:
-        if isinstance(report_data, dict):
-            previous_expense_ids.extend(report_data.get('expenses', []))
+    # for report_data in previous_reports:
+    #     if isinstance(report_data, dict):
+    #         previous_expense_ids.extend(report_data.get('expenses', []))
     
     # Fetch all expenses related to closed shifts, excluding previously reported expenses
-    total_expenses = Expense.objects.filter(waiter__in=waiters_managed, date=today).exclude(id__in=previous_expense_ids).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+    total_expenses = Expense.objects.filter(
+        waiter__in=waiters_managed,shift__in=shifts,reported=False).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
 
     # Calculate the amount to submit to the CEO
     amount_to_submit = total_sales - total_expenses - total_phone_payments
@@ -455,11 +458,11 @@ def generate_manager_report(request):
         'amount_to_submit': amount_to_submit,
         'expenses': Expense.objects.filter(
             waiter__in=waiters_managed,
-            shift__in=shifts,
-            date=today).exclude(id__in=previous_expense_ids)
+            shift__in=shifts,reported=False)
     }
 
     return context
+
 
 @login_required
 def generate_manager_report_view(request):
@@ -474,7 +477,6 @@ def generate_manager_report_view(request):
 
 from django.contrib.auth.decorators import login_required
 from users.models import Report
-
 
 @login_required
 def save_manager_report(request):
@@ -500,7 +502,7 @@ def save_manager_report(request):
         total_phone_payments = unreported_orders.filter(payment_method='phone').aggregate(
             total=Sum('total_cost'))['total'] or Decimal('0.00')
 
-        # Get the IDs of expenses already included in previous reports
+        # Get IDs of expenses already included in previous reports
         previous_reports = Report.objects.filter(manager=request.user).values_list('report_data', flat=True)
         previous_expense_ids = []
         
@@ -508,28 +510,37 @@ def save_manager_report(request):
             if isinstance(report_data, dict):
                 previous_expense_ids.extend(report_data.get('expenses', []))
         
-        # Filter out these expenses
-        total_expenses = Expense.objects.filter(waiter__in=waiters_managed, date=today).exclude(id__in=previous_expense_ids).aggregate(
-            total=Sum('amount'))['total'] or Decimal('0.00')
+        # Fetch all unreported expenses related to the closed shifts
+        unreported_expenses = Expense.objects.filter(
+            waiter__in=waiters_managed, 
+            shift__in=shifts,
+            reported=False  # Ensure you only include unreported expenses
+        )
 
-        # Calculate amount to submit to the CEO
+        # Aggregate total expenses for the report
+        total_expenses = unreported_expenses.aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+
+        # Calculate the amount to submit to the CEO
         amount_to_submit = total_sales - total_expenses - total_phone_payments
+
+        # Create the report data
+        report_data = {
+            'total_sales': str(total_sales),
+            'total_phone_payments': str(total_phone_payments),
+            'total_expenses': str(total_expenses),
+            'amount_to_submit': str(amount_to_submit),
+            'expenses': list(unreported_expenses.values_list('id', flat=True))  # Include the expense IDs in the report
+        }
 
         # Create or update the Report object
         report = Report.objects.create(
             manager=request.user,
-            report_data={
-                'total_sales': str(total_sales),
-                'total_phone_payments': str(total_phone_payments),
-                'total_expenses': str(total_expenses),
-                'amount_to_submit': str(amount_to_submit),
-                # Add other relevant data
-                'expenses': list(Expense.objects.filter(waiter__in=waiters_managed, date=today).exclude(id__in=previous_expense_ids).values_list('id', flat=True))
-            }
+            report_data=report_data
         )
 
-        # Mark the included orders as reported
+        # Mark the included orders and expenses as reported
         unreported_orders.update(reported=True)
+        unreported_expenses.update(reported=True)  # Mark the expenses as reported as well
 
         # Add a success message
         messages.success(request, 'Report has been successfully saved!')
@@ -537,7 +548,6 @@ def save_manager_report(request):
         return redirect('orders:generate_manager_report')  # Redirect to an appropriate page after saving
 
     return render(request, '404.html', {'message': 'Invalid request method.'})
-
 
 
 from django.http import HttpResponse

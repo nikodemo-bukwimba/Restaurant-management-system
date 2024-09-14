@@ -22,6 +22,6 @@ from .models import Expense
 
 @admin.register(Expense)
 class ExpenseAdmin(admin.ModelAdmin):
-    list_display = ('waiter', 'amount', 'description', 'date')
-    list_filter = ('waiter', 'date')
+    list_display = ('waiter', 'amount', 'description', 'date', 'shift', 'reported')
+    list_filter = ('waiter', 'date', 'shift', 'reported')
     search_fields = ('description',)

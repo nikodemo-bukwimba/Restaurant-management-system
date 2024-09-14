@@ -146,6 +146,7 @@
             </tr>
         </table>
         <h2 class="section-title">Expenses Details</h2>
+        <p>Expenses Count: {{ expenses|length }}</p>
         <table>
             <thead>
                 <tr>
@@ -166,7 +167,6 @@
                 {% endfor %}
             </tbody>
         </table>
-
         <h2 class="section-title">Orders Details</h2>
         {% for waiter, orders_list in orders_by_waiter.items %}
             <h3>Waiter: {{ waiter.user.first_name }} {{ waiter.user.last_name }}</h3>

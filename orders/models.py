@@ -2,6 +2,7 @@ from django.db import models
 from django.urls import reverse
 from users.models import Waiter,Report
 from django.utils.text import slugify
+from users.models import Shift
 
 class MenuCategory(models.Model):
     name = models.CharField(max_length=200)
@@ -58,9 +59,10 @@ class Expense(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField()
     date = models.DateField(auto_now_add=True)
-    shift = models.ForeignKey('users.Shift', on_delete=models.CASCADE, null=True, blank=True)  # Add this field
+    shift = models.ForeignKey(Shift, null=True, blank=True, on_delete=models.SET_NULL)
     reports = models.ManyToManyField(Report, related_name='expenses', blank=True)
     time = models.TimeField(default=timezone.now)
+    reported = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.amount} - {self.description}"

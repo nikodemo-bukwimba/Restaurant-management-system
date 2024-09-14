@@ -16,7 +16,7 @@ class Order(models.Model):
     sender_name = models.CharField(max_length=100, blank=True, null=True)
     manager_confirmed = models.BooleanField(default=False)
     assigned_waiter = models.ForeignKey(Waiter, null=True, blank=True, on_delete=models.SET_NULL)
-    shift = models.ForeignKey(Shift, null=True, blank=True, on_delete=models.SET_NULL)
+    shift = models.ForeignKey(Shift, null=True, blank=True, on_delete=models.SET_NULL) 
     reported = models.BooleanField(default=False)
 
     def get_total_cost(self):
