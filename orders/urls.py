@@ -9,12 +9,15 @@ app_name = 'orders'
 app_name = 'expenses'
 
 urlpatterns = [
+     # Report Generation and Saving
     path('generate_report/', views.generate_manager_report_view, name='generate_manager_report'),
-
-    path('generate_report/', views.generate_manager_report, name='generate_manager_report'),
     path('save_report/', views.save_manager_report, name='save_manager_report'),
     path('download_report/', views.download_manager_report_pdf, name='download_manager_report_pdf'),
-    # path('generate-report/<str:report_type>/', views.generate_manager_report, name='generate_manager_report'),
+
+    # Report List and Viewing
+    path('report/list/', views.view_report_list, name='view_report_list'),
+    path('report/view/<int:report_id>/', views.view_saved_report, name='view_saved_report'),
+   
     # Menu item detail
     path('menu-item/<int:id>/<slug:slug>/', views.menu_item_detail, name='menu_item_detail'),
     
@@ -32,13 +35,7 @@ urlpatterns = [
     
     # Waiter expenses
     path('waiter/expenses/', views.waiter_expenses, name='waiter_expenses'),
-    
-    # Generate report
-    # path('generate-report/<str:report_type>/', views.generate_manager_report, name='generate_manager_report'),
-    
-    # Download report as PDF
-    # path('download-report/', views.download_manager_report_pdf, name='download_manager_report_pdf'),
-    
+
     # Waiter history
     path('waiter-history/', views.waiter_history, name='waiter_history'),
     path('waiter-history/<int:waiter_id>/', views.waiter_history, name='waiter_history_with_id'),
@@ -55,8 +52,6 @@ urlpatterns = [
     # URL pattern for menu items by category ID (consider if needed)
     path('menu-items/<int:category_id>/', views.menu_item_list, name='menu_item_list_by_category_id'),
 
-    path('add-menu-item/', views.add_menu_item, name='add_menu_item'),
-    
-    # The last URL pattern is redundant with the earlier category slug pattern
-    # path('<slug:category_slug>/', views.menu_item_list, name='menu_item_list_by_category'),
+    path('add-menu-item/', views.add_menu_item, name='add_menu_item'),    
+
 ]

@@ -5,13 +5,14 @@
 <div class="container mt-5">
     <h2 class="mb-4 text-center">Dashibodi ya Meneja</h2>
 
-    <!-- Button to Generate Report -->
-    <div class="text-center custom-button-container"> <!-- Added custom class -->
-        <a href="{% url 'orders:generate_manager_report' %}" class="btn btn-primary btn-lg">Generate Report</a>
+    <!-- Buttons to Generate Report and View Report List -->
+    <div class="text-center custom-button-container"> <!-- Custom button container class for styling -->
+        <a href="{% url 'orders:generate_manager_report' %}" class="btn btn-primary btn-lg mr-2">Generate Report</a>
+        <a href="{% url 'orders:view_report_list' %}" class="btn btn-secondary btn-lg">View Report List</a>
     </div>
 
     <!-- Overview Cards Section -->
-    <div class="row">
+    <div class="row mt-4">
         <div class="col-md-4 mb-3">
             <div class="card bg-primary text-white">
                 <div class="card-header">Wahudumu</div>
@@ -37,9 +38,8 @@
             </div>
         </div>
     </div>
-</div>
 
-        <!-- Waiter List Section -->
+    <!-- Waiter List Section -->
     <div class="waiter-list mt-5">
         <h3 class="text-center">Orodha ya Wahudumu</h3>
         <div class="row">

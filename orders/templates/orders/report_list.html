@@ -43,36 +43,40 @@
         tr:hover { 
             background-color: #f0f0f0; 
         }
+        .btn-primary {
+            text-decoration: none;
+            color: #fff;
+            background-color: #007bff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Report List</h1>
+        <h1>Orodha ya Ripoti</h1>
         
         <table>
             <thead>
                 <tr>
-                    <th>Report Type</th>
-                    <th>Start Time</th>
-                    <th>End Time</th>
-                    <th>Created At</th>
-                    <th>Actions</th>
+                    <th>Imetengenezwa</th>
+                    <th>Kitendo</th>
                 </tr>
             </thead>
             <tbody>
                 {% for report in reports %}
                     <tr>
-                        <td>{{ report.report_type }}</td>
-                        <td>{{ report.start_time }}</td>
-                        <td>{{ report.end_time }}</td>
                         <td>{{ report.created_at }}</td>
                         <td>
-                            <a href="{% url 'orders:view_saved_report' report.report_type %}" class="btn btn-primary">View Report</a>
+                            <a href="{% url 'orders:view_saved_report' report.id %}" class="btn btn-primary">Angalia</a>
                         </td>
                     </tr>
                 {% endfor %}
             </tbody>
-            
         </table>
     </div>
 </body>

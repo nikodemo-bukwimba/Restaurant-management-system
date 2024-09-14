@@ -433,15 +433,6 @@ def generate_manager_report(request):
     total_sales = unreported_orders.aggregate(total_sales=Sum('total_cost'))['total_sales'] or Decimal('0.00')
     total_phone_payments = unreported_orders.filter(payment_method='phone').aggregate(
         total=Sum('total_cost'))['total'] or Decimal('0.00')
-
-    # Get IDs of expenses already included in previous reports
-    # previous_reports = Report.objects.filter(manager=request.user).values_list('report_data', flat=True)
-    # previous_expense_ids = []
-
-    # for report_data in previous_reports:
-    #     if isinstance(report_data, dict):
-    #         previous_expense_ids.extend(report_data.get('expenses', []))
-    
     # Fetch all expenses related to closed shifts, excluding previously reported expenses
     total_expenses = Expense.objects.filter(
         waiter__in=waiters_managed,shift__in=shifts,reported=False).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
@@ -477,6 +468,7 @@ def generate_manager_report_view(request):
 
 from django.contrib.auth.decorators import login_required
 from users.models import Report
+from django.db.models import Count
 
 @login_required
 def save_manager_report(request):
@@ -505,11 +497,11 @@ def save_manager_report(request):
         # Get IDs of expenses already included in previous reports
         previous_reports = Report.objects.filter(manager=request.user).values_list('report_data', flat=True)
         previous_expense_ids = []
-        
+
         for report_data in previous_reports:
             if isinstance(report_data, dict):
                 previous_expense_ids.extend(report_data.get('expenses', []))
-        
+
         # Fetch all unreported expenses related to the closed shifts
         unreported_expenses = Expense.objects.filter(
             waiter__in=waiters_managed, 
@@ -529,8 +521,17 @@ def save_manager_report(request):
             'total_phone_payments': str(total_phone_payments),
             'total_expenses': str(total_expenses),
             'amount_to_submit': str(amount_to_submit),
-            'expenses': list(unreported_expenses.values_list('id', flat=True))  # Include the expense IDs in the report
+            'expenses': list(unreported_expenses.values_list('id', flat=True)),  # Include the expense IDs in the report
+            'orders_by_waiter': {
+                waiter.id: list(unreported_orders.filter(assigned_waiter=waiter).values_list('id', flat=True))
+                for waiter in waiters_managed
+            }
         }
+
+        # Check if the report data is meaningful
+        if total_sales == Decimal('0.00') and total_expenses == Decimal('0.00') and total_phone_payments == Decimal('0.00'):
+            messages.error(request, 'No content to save. Report contains no data.')
+            return redirect('orders:generate_manager_report')  # Redirect back if the report is empty
 
         # Create or update the Report object
         report = Report.objects.create(
@@ -545,7 +546,7 @@ def save_manager_report(request):
         # Add a success message
         messages.success(request, 'Report has been successfully saved!')
 
-        return redirect('orders:generate_manager_report')  # Redirect to an appropriate page after saving
+        return redirect('orders:view_saved_report', report_id=report.id)  # Redirect to the saved report view
 
     return render(request, '404.html', {'message': 'Invalid request method.'})
 
@@ -560,6 +561,7 @@ from django.contrib.auth.decorators import login_required
 def download_manager_report_pdf(request):
     # Get the context data from generate_manager_report
     context = generate_manager_report(request)
+    context['is_pdf'] = True  # Add this flag to the context
     
     # Render the HTML to a string using the context data
     html_string = render_to_string('orders/manager_report.html', context)
@@ -576,6 +578,52 @@ def download_manager_report_pdf(request):
     pdf_response['Content-Disposition'] = 'attachment; filename="manager_report.pdf"'
     
     return pdf_response
+
+
+#View saved report list
+def view_report_list(request):
+    # Retrieve all reports from the database
+    reports = Report.objects.all()
+    # Pass the reports to the template
+    return render(request, 'orders/report_list.html', {'reports': reports})
+
+@login_required
+def view_saved_report(request, report_id):
+    # Retrieve a specific report by its ID
+    report = get_object_or_404(Report, id=report_id)
+    
+    # Extract necessary data from report_data JSON
+    report_data = report.report_data
+    total_sales = report_data.get('total_sales', 0)
+    total_phone_payments = report_data.get('total_phone_payments', 0)
+    total_expenses = report_data.get('total_expenses', 0)
+    amount_to_submit = report_data.get('amount_to_submit', 0)
+    expenses_ids = report_data.get('expenses', [])
+    orders_by_waiter_data = report_data.get('orders_by_waiter', {})
+    
+    # Fetch detailed expense data
+    expense_details = Expense.objects.filter(id__in=expenses_ids)
+    
+    # Fetch detailed order data
+    orders_by_waiter = {}
+    for waiter_id, order_ids in orders_by_waiter_data.items():
+        waiter = Waiter.objects.get(id=waiter_id)
+        orders = Order.objects.filter(id__in=order_ids)
+        if orders.exists():
+            orders_by_waiter[waiter] = orders
+    
+    context = {
+        'report': report,
+        'total_sales': total_sales,
+        'total_phone_payments': total_phone_payments,
+        'total_expenses': total_expenses,
+        'amount_to_submit': amount_to_submit,
+        'orders_by_waiter': orders_by_waiter,
+        'expenses': expense_details
+    }
+    return render(request, 'orders/view_report.html', context)
+
+
 
 
 @login_required

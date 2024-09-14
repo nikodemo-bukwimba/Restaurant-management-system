@@ -43,21 +43,6 @@
         tr:hover { 
             background-color: #f0f0f0; 
         }
-        .btn-primary { 
-            display: inline-block; 
-            padding: 12px 24px; 
-            font-size: 16px; 
-            color: #fff; 
-            background-color: #007bff; 
-            border: none; 
-            border-radius: 5px; 
-            text-decoration: none; 
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        .btn-primary:hover { 
-            background-color: #0056b3; 
-        }
         .section-title {
             margin-top: 30px;
             border-bottom: 2px solid #ddd;
@@ -68,7 +53,31 @@
             color: #444; 
             margin-top: 20px; 
         }
-        /* Message Styles */
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .btn-primary { 
+            display: inline-block; 
+            padding: 12px 24px; 
+            font-size: 16px; 
+            color: #fff; 
+            background-color: #007bff; 
+            border: none; 
+            border-radius: 5px; 
+            text-decoration: none; 
+            text-align: center;
+        }
+        .btn-primary:hover { 
+            background-color: #0056b3; 
+        }
+        @media print {
+            .btn-primary {
+                display: none;
+            }
+        }
         .messages {
             list-style-type: none;
             padding: 0;
@@ -84,16 +93,6 @@
             opacity: 1;
             transition: opacity 0.5s ease-out; /* Smooth fade-out effect */
         }
-        .messages .success {
-            background-color: #d4edda; /* Bootstrap green for success */
-            color: #155724;
-        }
-        /* Hide the button in print or PDF view */
-        @media print {
-            .btn-primary {
-                display: none;
-            }
-        }
     </style>
 </head>
 <body>
@@ -108,43 +107,38 @@
 
         <h1>Manager Report</h1>
 
-        <!-- Button to download PDF (hidden in print) -->
-        <a href="{% url 'orders:download_manager_report_pdf' %}" class="btn-primary">Download PDF</a>
-
-        <form action="{% url 'orders:save_manager_report' %}" method="post">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-primary">Save Report</button>
-        </form>
-
-        <!-- Share via Email -->
-        <a href="mailto:?subject=Manager Report&body=Here is the manager report: {{ request.build_absolute_uri }}" class="btn-primary">Share Report via Email</a>
-
-        <!-- Share via WhatsApp -->
-        <a href="https://wa.me/?text=Here%20is%20the%20manager%20report%20{{ request.build_absolute_uri }}" class="btn-primary">Share on WhatsApp</a>
+        <!-- Buttons arranged in a row -->
+        <div class="btn-container">
+            <a href="{% url 'orders:download_manager_report_pdf' %}" class="btn-primary">Download PDF</a>
+            <form action="{% url 'orders:save_manager_report' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn-primary">Save Report</button>
+            </form>
+            <a href="mailto:?subject=Manager Report&body=Here is the manager report: {{ request.build_absolute_uri }}" class="btn-primary">Share Report via Email</a>
+            <a href="https://wa.me/?text=Here%20is%20the%20manager%20report%20{{ request.build_absolute_uri }}" class="btn-primary">Share on WhatsApp</a>
+        </div>
 
         <h2 class="section-title">Summary</h2>
         <table>
-            <tr>
-                <th>Total Orders</th>
-                <td>{{ orders_by_waiter|length }}</td>
-            </tr>
-            <tr>
-                <th>Total Sales</th>
-                <td>Tsh.{{ total_sales }}</td>
-            </tr>
-            <tr>
-                <th>Total Payment by Phone</th>
-                <td>Tsh.{{ total_phone_payments }}</td>
-            </tr>
-            <tr>
-                <th>Total Expenses</th>
-                <td>Tsh.{{ total_expenses }}</td>
-            </tr>
-            <tr>
-                <th>Total Amount to Submit</th>
-                <td>Tsh.{{ amount_to_submit }}</td>
-            </tr>
+            <thead>
+                <tr>
+                    <th>Total Sales</th>
+                    <th>Total Payment by Phone</th>
+                    <th>Total Expenses</th>
+                    <th>Total Amount to Submit</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+
+                    <td>Tsh.{{ total_sales }}</td>
+                    <td>Tsh.{{ total_phone_payments }}</td>
+                    <td>Tsh.{{ total_expenses }}</td>
+                    <td>Tsh.{{ amount_to_submit }}</td>
+                </tr>
+            </tbody>
         </table>
+
         <h2 class="section-title">Expenses Details</h2>
         <p>Expenses Count: {{ expenses|length }}</p>
         <table>
@@ -167,9 +161,12 @@
                 {% endfor %}
             </tbody>
         </table>
+
         <h2 class="section-title">Orders Details</h2>
-        {% for waiter, orders_list in orders_by_waiter.items %}
+    {% for waiter, orders_list in orders_by_waiter.items %}
+        {% if orders_list %}
             <h3>Waiter: {{ waiter.user.first_name }} {{ waiter.user.last_name }}</h3>
+            <p>Orders Count: {{ orders_list|length }}</p>
             <table>
                 <thead>
                     <tr>
@@ -192,7 +189,11 @@
                     {% endfor %}
                 </tbody>
             </table>
-        {% endfor %}
+        {% endif %}
+    {% empty %}
+        <p>No orders available for the selected waiters.</p>
+    {% endfor %}
+
     </div>
 
     <script>

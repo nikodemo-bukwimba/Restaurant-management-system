@@ -43,6 +43,12 @@
         tr:hover { 
             background-color: #f0f0f0; 
         }
+        .section-title {
+            margin-top: 30px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 5px;
+            color: #333;
+        }
     </style>
 </head>
 <body>
@@ -50,13 +56,10 @@
         <h1>Report Details</h1>
         
         <!-- Display report details -->
-        <p><strong>Report Type:</strong> {{ report.report_type }}</p>
-        <p><strong>Start Time:</strong> {{ report.start_time }}</p>
-        <p><strong>End Time:</strong> {{ report.end_time }}</p>
         <p><strong>Created At:</strong> {{ report.created_at }}</p>
         
         <!-- Display summary in a table -->
-        <h2>Summary</h2>
+        <h2 class="section-title">Summary</h2>
         <table>
             <thead>
                 <tr>
@@ -77,28 +80,40 @@
         </table>
         
         <!-- Display detailed data for orders by waiter -->
-        <h2>Orders by Waiter</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Waiter</th>
-                    <th>Order Count</th>
-                    <th>Total Sales</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for waiter, data in orders_by_waiter.items %}
-                    <tr>
-                        <td>{{ waiter.user.first_name }} {{ waiter.user.last_name }}</td>
-                        <td>{{ data.order_count }}</td>
-                        <td>Tsh.{{ data.total_sales }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
+        <h2 class="section-title">Orders by Waiter</h2>
+        {% if orders_by_waiter %}
+            {% for waiter, orders in orders_by_waiter.items %}
+                <h3>Waiter: {{ waiter.user.first_name }} {{ waiter.user.last_name }}</h3>
+                <p>Orders Count: {{ orders.count }}</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Created</th>
+                            <th>Total Cost</th>
+                            <th>Payment Method</th>
+                            <th>Sender Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                            <tr>
+                                <td>{{ order.id }}</td>
+                                <td>{{ order.created }}</td>
+                                <td>Tsh.{{ order.total_cost }}</td>
+                                <td>{{ order.get_payment_method_display }}</td>
+                                <td>{{ order.sender_name }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endfor %}
+        {% else %}
+            <p>No orders available for the selected waiters.</p>
+        {% endif %}
+        
         <!-- Display expenses in a table -->
-        <h2>Expenses Details</h2>
+        <h2 class="section-title">Expenses Details</h2>
         <table>
             <thead>
                 <tr>
