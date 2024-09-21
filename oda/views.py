@@ -80,7 +80,7 @@ def order_create(request):
         cart.clear()
 
         # Add a success message
-        messages.success(request, 'Order placed successfully!')
+        messages.success(request, 'Oda imewekwa kikamilifu!')
 
         # Redirect to the menu list page
         return redirect('orders:menu_item_list')

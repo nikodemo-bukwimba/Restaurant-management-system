@@ -1,25 +1,25 @@
 {% extends 'orders/base.html' %}
 
-{% block title %}My History{% endblock %}
+{% block title %}Historia Yangu{% endblock %}
 
 {% block content %}
-    <h1>Order and Expenses History</h1>
+    <h1>Historia ya Oda na Matumizi</h1>
 
     {% if error %}
         <p>{{ error }}</p>
     {% endif %}
 
-    <h2>Order History</h2>
+    <h2>Historia ya Oda</h2>
     {% if page_obj_orders %}
-        <h3>Aggregated Totals</h3>
+        <h3>Jumla Iliyokusanywa</h3>
         <div class="table-container">
             <table>
                 <thead>
                     <tr>
-                        <th>Month</th>
-                        <th>Year</th>
-                        <th>Total Cost</th>
-                        <th>Trend (%)</th>
+                        <th>Mwezi</th>
+                        <th>Mwaka</th>
+                        <th>Gharama Jumla</th>
+                        <th>Mwelekeo (%)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -38,7 +38,7 @@
                                         0%
                                     {% endif %}
                                 {% else %}
-                                    No previous data to compare
+                                Hakuna data ya awali ya kulinganisha
                                 {% endif %}
                             </td>
                         </tr>
@@ -47,16 +47,16 @@
             </table>
         </div>
         
-        <h3>Detailed Orders</h3>
+        <h3>Maelezo ya Oda</h3>
         <div class="table-container">
             <table>
                 <thead>
                     <tr>
-                        <th>Order ID</th>
-                        <th>Date</th>
-                        <th>Total Cost</th>
-                        <th>Payment Method</th>
-                        <th>Order Items</th>
+                        <th>Oda No.</th>
+                        <th>Tarehe</th>
+                        <th>Gharama Jumla</th>
+                        <th>Njia ya Malipo</th>
+                        <th>Vitu vya Oda</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -71,7 +71,7 @@
                                     {% for item in order.items.all %}
                                     <li>({{ item.menu_item.name }}) - Quantity: {{ item.quantity }} - Tsh.{{ item.get_cost }}</li>
                                 {% empty %}
-                                    <li>No items</li>
+                                    <li>Hakuna vitu</li>
                                 {% endfor %}
                                 </ul>
                             </td>
@@ -84,30 +84,30 @@
         <div class="pagination">
             <span class="step-links">
                 {% if page_obj_orders.has_previous %}
-                    <a href="?page_orders=1">&laquo; first</a>
-                    <a href="?page_orders={{ page_obj_orders.previous_page_number }}">previous</a>
+                    <a href="?page_orders=1">&laquo; Yakwanza</a>
+                    <a href="?page_orders={{ page_obj_orders.previous_page_number }}">Iliyopita</a>
                 {% endif %}
                 
                 {% if page_obj_orders.has_next %}
-                    <a href="?page_orders={{ page_obj_orders.next_page_number }}">next</a>
-                    <a href="?page_orders={{ page_obj_orders.paginator.num_pages }}">last &raquo;</a>
+                    <a href="?page_orders={{ page_obj_orders.next_page_number }}">Inayofuata</a>
+                    <a href="?page_orders={{ page_obj_orders.paginator.num_pages }}">Mwisho &raquo;</a>
                 {% endif %}
             </span>
         </div>
     {% else %}
-        <p>No orders found.</p>
+        <p>Hakuna oda zilizopatikana</p>
     {% endif %}
 
-    <h2>Expenses History</h2>
+    <h2>Historia ya Matumizi</h2>
     {% if page_obj_expenses %}
-        <h3>Aggregated Totals</h3>
+        <h3>Jumla Iliyokusanywa</h3>
         <div class="table-container">
             <table>
                 <thead>
                     <tr>
-                        <th>Month</th>
-                        <th>Year</th>
-                        <th>Total Amount</th>
+                        <th>Mwezi</th>
+                        <th>Mwaka</th>
+                        <th>Jumla</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -122,14 +122,14 @@
             </table>
         </div>
 
-        <h3>Detailed Expenses</h3>
+        <h3>Maelezo ya Matumizi</h3>
         <div class="table-container">
             <table>
                 <thead>
                     <tr>
-                        <th>Date</th>
-                        <th>Amount</th>
-                        <th>Description</th>
+                        <th>Tarehe</th>
+                        <th>Kiasi</th>
+                        <th>Maelezo</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -147,17 +147,18 @@
         <div class="pagination">
             <span class="step-links">
                 {% if page_obj_expenses.has_previous %}
-                    <a href="?page_expenses=1">&laquo; first</a>
-                    <a href="?page_expenses={{ page_obj_expenses.previous_page_number }}">previous</a>
+                    <a href="?page_expenses=1">&laquo; yakwanza
+                    </a>
+                    <a href="?page_expenses={{ page_obj_expenses.previous_page_number }}">iliyopita</a>
                 {% endif %}
                 
                 {% if page_obj_expenses.has_next %}
-                    <a href="?page_expenses={{ page_obj_expenses.next_page_number }}">next</a>
-                    <a href="?page_expenses={{ page_obj_expenses.paginator.num_pages }}">last &raquo;</a>
+                    <a href="?page_expenses={{ page_obj_expenses.next_page_number }}">inayofuata</a>
+                    <a href="?page_expenses={{ page_obj_expenses.paginator.num_pages }}">yamwisho &raquo;</a>
                 {% endif %}
             </span>
         </div>
     {% else %}
-        <p>No expenses found.</p>
+        <p>Hakuna matumizi yaliyopatikana</p>
     {% endif %}
 {% endblock %}

@@ -3,28 +3,47 @@
 {% block title %}Waiter Shift Details{% endblock %}
 
 {% block content %}
-    <h1>Shift Details for {{ waiter.name }}</h1>
+    <h1>Maelezo ya Zamu ya: {{ waiter.name }}</h1>
 
     <!-- Display Shift Information -->
     {% if shift %}
         <div style="margin-bottom: 20px;">
-            <h2>Shift Information</h2>
-            <p>Shift for: {{ shift.waiter.name }}</p>
-            <p>Started at: {{ shift.start_time|date:"Y-m-d H:i" }}</p>
+            <h2>Taarifa za Zamu</h2>
+            <p>Zamu ya: {{ shift.waiter.name }}</p>
+            <p>Imeanza: {{ shift.start_time|date:"Y-m-d H:i" }}</p>
             {% if shift.end_time %}
-                <p>Ended at: {{ shift.end_time|date:"Y-m-d H:i" }}</p>
+                <p>Imemalizika: {{ shift.end_time|date:"Y-m-d H:i" }}</p>
             {% else %}
-                <p>Status: Ongoing</p>
+                <p>Hali: Inaendelea</p>
             {% endif %}
         </div>
     {% else %}
-        <p>No active shift available.</p>
+        <p>Hakuna zamu inayoendelea</p>
     {% endif %}
 
     <!-- View History Button -->
-    <div style="margin-bottom: 20px;">
-        <a href="{% url 'orders:waiter_history_with_id' waiter_id=waiter.id %}" class="btn btn-primary">View Waiter History</a>
+    <!-- View History Button -->
+    <div style="margin-bottom: 2rem;">
+        <a href="{% url 'orders:waiter_history_with_id' waiter_id=waiter.id %}" 
+        style="background-color: #228B22; 
+                color: #ffffff; 
+                border: none; 
+                border-radius: 5px; 
+                padding: 12px 24px; 
+                font-size: 1.2rem; 
+                font-weight: 500; 
+                text-transform: uppercase; 
+                transition: background-color 0.3s ease, box-shadow 0.3s ease; 
+                text-decoration: none; 
+                display: inline-block;"
+        onmouseover="this.style.backgroundColor='#1e7e1e'; this.style.boxShadow='0 4px 6px rgba(0, 0, 0, 0.1)';"
+        onmouseout="this.style.backgroundColor='#228B22'; this.style.boxShadow='none';"
+        onfocus="this.style.boxShadow='0 0 0 3px rgba(34, 139, 34, 0.5)';"
+        onblur="this.style.boxShadow='none';">
+            Angalia Historia
+        </a>
     </div>
+
 
     {% if orders %}
         <div class="table-container">
@@ -33,15 +52,15 @@
                 <table class="orders">
                     <thead>
                         <tr>
-                            <th>Order ID</th>
-                            <th>Created</th>
-                            <th>Order Items</th> <!-- Moved Column -->
-                            <th>Total Cost</th>
-                            <th>Payment Method</th>
-                            <th>Sender Name (for phone payments)</th>
-                            <th>Update Payment</th>
-                            <th>Manager Confirmation</th>
-                            <th>Confirm</th>
+                            <th>Oda No.</th>
+                            <th>Imetengenezwa</th>
+                            <th>Vitu Katika Oda</th> <!-- Moved Column -->
+                            <th>Kiasi</th>
+                            <th>Njia ya Malipo</th>
+                            <th>Jina la Mtumaji (for phone payments)</th>
+                            <th>Huisha Malipo</th>
+                            <th>Uthibitisho wa Meneja</th>
+                            <th>Thibitisha</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -56,7 +75,7 @@
                                         {% for item in order.items.all %}
                                             <li>({{ item.menu_item.name }}) - Idadi: {{ item.quantity }} - Tsh.{{ item.get_cost }}</li>
                                         {% empty %}
-                                            <li>No items</li>
+                                            <li>Hakuna Kitu</li>
                                         {% endfor %}
                                     </ul>
                                 </td>
@@ -68,7 +87,7 @@
                                     <select name="payment_method_{{ order.id }}" id="payment_method_{{ order.id }}" class="payment-method-select" data-order-id="{{ order.id }}">
                                         <option value="cash" {% if order.payment_method == 'cash' %}selected{% endif %}>Cash</option>
                                         <option value="credit_card" {% if order.payment_method == 'credit_card' %}selected{% endif %}>Credit Card</option>
-                                        <option value="phone" {% if order.payment_method == 'phone' %}selected{% endif %}>Phone</option>
+                                        <option value="phone" {% if order.payment_method == 'phone' %}selected{% endif %}>Simu</option>
                                     </select>
                                 </td>
 
@@ -81,22 +100,22 @@
 
                                 <!-- Update Payment Method Button -->
                                 <td>
-                                    <button type="submit" name="update_payment" value="{{ order.id }}" class="btn btn-info">Update</button>
+                                    <button type="submit" name="update_payment" value="{{ order.id }}" class="btn btn-info">Huisha</button>
                                 </td>
 
                                 <!-- Manager Confirmation Status -->
                                 <td>
                                     {% if order.manager_confirmed %}
-                                        <span style="color:green;">Confirmed</span>
+                                        <span style="color:green;">Imethibitishwa</span>
                                     {% else %}
-                                        <span style="color:red;">Pending</span>
+                                        <span style="color:red;">Inasubiri</span>
                                     {% endif %}
                                 </td>
 
                                 <!-- Confirm Order Button -->
                                 <td>
                                     {% if not order.manager_confirmed %}
-                                        <button type="submit" name="confirm_order" value="{{ order.id }}" class="btn btn-success">Confirm</button>
+                                        <button type="submit" name="confirm_order" value="{{ order.id }}" class="btn btn-success">Thibitisha</button>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -106,7 +125,7 @@
             </form>
         </div>
     {% else %}
-        <p>No orders for this shift.</p>
+        <p>Hakuna Oda kwa Zamu Hii</p>
     {% endif %}
 
     <!-- MAUZO Table -->
@@ -139,9 +158,9 @@
     <form method="post">
         {% csrf_token %}
         <div class="alert alert-warning" role="alert">
-            Are you sure you want to accept the sales for this shift and end it?
+            Una uhakika unataka kukubali mauzo ya zamu hii?
         </div>
-        <button type="submit" name="accept_sales" class="btn btn-danger">Confirm and End Shift</button>
+        <button type="submit" name="accept_sales" class="btn btn-danger">Thibitisha</button>
     </form>
     {% endif %}
 {% endblock %}

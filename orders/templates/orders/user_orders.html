@@ -1,6 +1,6 @@
 {% extends 'orders/base.html' %}
 
-{% block title %}My Orders{% endblock %}
+{% block title %}Oda Zangu{% endblock %}
 
 {% block content %}
     <h1>ODA ZANGU</h1>
@@ -8,23 +8,23 @@
     <!-- Display Shift Information -->
     {% if shift %}
         <div style="margin-bottom: 20px;">
-            <h2>Shift Information</h2>
-            <p>Shift for: {{ shift.waiter.name }}</p>
-            <p>Started at: {{ shift.start_time|date:"Y-m-d H:i" }}</p>
+            <h2>Taarifa za Zamu</h2>
+            <p>Zamu ya: {{ shift.waiter.name }}</p>
+            <p>Ilianza saa: {{ shift.start_time|date:"Y-m-d H:i" }}</p>
             {% if shift.end_time %}
-                <p>Ended at: {{ shift.end_time|date:"Y-m-d H:i" }}</p>
+                <p>Ilimalizika saa: {{ shift.end_time|date:"Y-m-d H:i" }}</p>
             {% else %}
-                <p>Status: Ongoing</p>
+                <p>Hali: Inaendelea</p>
             {% endif %}
         </div>
     {% else %}
-        <p>No active shift available.</p>
+        <p>Hakuna zamu inayoendelea.</p>
     {% endif %}
 
     <!-- View History Button -->
     <div style="margin-bottom: 20px;">
         <a href="{% url 'orders:waiter_history' %}" class="btn btn-primary" style="text-decoration: none; padding: 10px 15px; background-color: #004d00; color: white; border-radius: 5px;">
-            View History
+            Angalia Historia
         </a>
     </div>
 
@@ -33,14 +33,14 @@
             <table class="orders">
                 <thead>
                     <tr>
-                        <th>Order ID</th>
-                        <th>Created</th>
-                        <th>Total Cost</th>
-                        <th>Payment Method</th>
-                        <th>Update Payment Method</th>
+                        <th>Oda No.</th>
+                        <th>Imetengenezwa</th>
+                        <th>Gharama Jumla</th>
+                        <th>Njia ya Malipo</th>
+                        <th>Sasisha Njia ya Malipo</th>
                         {% if has_phone_payments %}
-                            <th>Sender Name</th>
-                            <th>Manager Confirmation</th>
+                            <th>Jina la Mtumaji</th>
+                            <th>Uthibitisho</th>
                         {% endif %}
                     </tr>
                 </thead>
@@ -55,24 +55,24 @@
                                 <form method="post" action="{% url 'orders:update_payment_method' order.id %}">
                                     {% csrf_token %}
                                     <select name="payment_method" onchange="toggleSenderNameInput(this, {{ order.id }})">
-                                        <option value="cash" {% if order.payment_method == 'cash' %}selected{% endif %}>Cash</option>
-                                        <option value="credit_card" {% if order.payment_method == 'credit_card' %}selected{% endif %}>Credit Card</option>
-                                        <option value="phone" {% if order.payment_method == 'phone' %}selected{% endif %}>Phone</option>
+                                        <option value="cash" {% if order.payment_method == 'cash' %}selected{% endif %}>Tasilimu</option>
+                                        <option value="credit_card" {% if order.payment_method == 'credit_card' %}selected{% endif %}>Kadi ya Mikopo</option>
+                                        <option value="phone" {% if order.payment_method == 'phone' %}selected{% endif %}>Simu</option>
                                     </select>
                                     <input type="text" name="sender_name" placeholder="Enter sender name"
                                            value="{% if order.payment_method == 'phone' %}{{ order.sender_name }}{% endif %}" 
                                            style="{% if order.payment_method != 'phone' %}display:none;{% endif %}" 
                                            id="sender-name-{{ order.id }}">
-                                    <button type="submit">Update</button>
+                                    <button type="submit">Badilisha</button>
                                 </form>
                             </td>
                             {% if order.payment_method == 'phone' %}
                                 <td>{{ order.sender_name }}</td>
                                 <td>
                                     {% if order.manager_confirmed %}
-                                        <span style="color:green;">Confirmed</span>
+                                        <span style="color:green;">Imethibitishwa</span>
                                     {% else %}
-                                        <span style="color:red;">Pending</span>
+                                        <span style="color:red;">Inasubiri</span>
                                     {% endif %}
                                 </td>
                             {% endif %}
@@ -110,7 +110,7 @@
             </table>
         </div>
     {% else %}
-        <p>You have no orders.</p>
+        <p>Hauna Oda.</p>
     {% endif %}
 {% endblock %}
 

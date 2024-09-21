@@ -109,7 +109,6 @@
 
         <!-- Buttons arranged in a row -->
         <div class="btn-container">
-            <a href="{% url 'orders:download_manager_report_pdf' %}" class="btn-primary">Download PDF</a>
             <form action="{% url 'orders:save_manager_report' %}" method="post">
                 {% csrf_token %}
                 <button type="submit" class="btn-primary">Save Report</button>
@@ -130,7 +129,6 @@
             </thead>
             <tbody>
                 <tr>
-
                     <td>Tsh.{{ total_sales }}</td>
                     <td>Tsh.{{ total_phone_payments }}</td>
                     <td>Tsh.{{ total_expenses }}</td>

@@ -34,4 +34,4 @@ class ExpenseFormForManager(forms.ModelForm):
 class MenuItemForm(forms.ModelForm):
     class Meta:
         model = MenuItem
-        fields = ['category', 'name', 'slug', 'image', 'description', 'customer_price', 'staff_price', 'available']
+        fields = ['category', 'name', 'image', 'description', 'customer_price', 'available']

@@ -43,19 +43,19 @@
             </table>
         </div>
 
-        <p>Thank you for your order! Click the button below to finalize your purchase.</p>
+        <p>Asante kwa oda yako! Bofya kitufe hapa chini ili kukamilisha ununuzi wako.</p>
         
         {% if is_manager %}
             <form action="{% url 'oda:order_create' %}" method="post" class="order-form">
                 {% csrf_token %}
-                <label for="waiter">Assign Waiter:</label>
+                <label for="waiter">Weka Mhudumu:</label>
                 <select name="waiter" id="waiter">
-                    <option value="">Select a waiter</option>
+                    <option value="">Chagua Mhudumu</option>
                     {% for waiter in waiters %}
                         <option value="{{ waiter.id }}">{{ waiter.name }}</option>
                     {% endfor %}
                 </select>
-                <input type="submit" value="Place Order" class="button">
+                <input type="submit" value="Weka Oda" class="button">
             </form>
         {% else %}
             <form action="{% url 'oda:order_create' %}" method="post">
@@ -65,7 +65,7 @@
         {% endif %}
         
     {% else %}
-        <p>Your cart is empty.</p>
-        <a href="{% url 'orders:menu_item_list' %}" class="button">Continue Shopping</a>
+        <p>Kikapu chako hakina kitu.</p>
+        <a href="{% url 'orders:menu_item_list' %}" class="button">Endelea Kuchagua</a>
     {% endif %}
 {% endblock %}

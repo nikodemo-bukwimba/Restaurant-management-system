@@ -7,8 +7,8 @@
 
     <!-- Buttons to Generate Report and View Report List -->
     <div class="text-center custom-button-container"> <!-- Custom button container class for styling -->
-        <a href="{% url 'orders:generate_manager_report' %}" class="btn btn-primary btn-lg mr-2">Generate Report</a>
-        <a href="{% url 'orders:view_report_list' %}" class="btn btn-secondary btn-lg">View Report List</a>
+        <a href="{% url 'orders:generate_manager_report' %}" class="btn btn-primary btn-lg mr-2">Tengeneza Ripoti</a>
+        <a href="{% url 'orders:view_report_list' %}" class="btn btn-secondary btn-lg">Ripoti</a>
     </div>
 
     <!-- Overview Cards Section -->
@@ -55,7 +55,7 @@
             {% empty %}
             <div class="col-12">
                 <div class="alert alert-info" role="alert">
-                    No waiters found.
+                    Hakuna Mhudumu Aliyepatikana.
                 </div>
             </div>
             {% endfor %}

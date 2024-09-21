@@ -4,6 +4,7 @@ from orders.models import MenuItem  # Assuming MenuItem is in orders.models
 from .cart import Cart
 from .forms import CartAddMenuItemForm  # Adjusted form name
 from oda.models import Order, OrderItem  # Ensure the correct import
+from django.contrib import messages
 
 @require_POST
 def cart_add(request, menu_item_id):

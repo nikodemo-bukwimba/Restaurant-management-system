@@ -87,18 +87,18 @@
 
         <!-- Display report details -->
         <div class="created-at">
-            <strong>Created At:</strong> {{ report.created_at }}
+            <strong>Imetengenezwa:</strong> {{ report.created_at }}
         </div>
 
         <!-- Display summary in a table -->
-        <h2 class="section-title">Summary</h2>
+        <h2 class="section-title">Muhtasari</h2>
         <table>
             <thead>
                 <tr>
-                    <th>Total Sales</th>
-                    <th>Total Phone Payments</th>
-                    <th>Total Expenses</th>
-                    <th>Amount to Submit</th>
+                    <th>Jumla ya Mauzo</th>
+                    <th>Lipa Namba</th>
+                    <th>Jumla ya Maumizi</th>
+                    <th>Kiwango cha Kukabidhi</th>
                 </tr>
             </thead>
             <tbody>
@@ -112,19 +112,19 @@
         </table>
         
         <!-- Display detailed data for orders by waiter -->
-        <h2 class="section-title">Orders by Waiter</h2>
+        <h2 class="section-title">Oda za Wahudumu</h2>
         {% if orders_by_waiter %}
             {% for waiter, orders in orders_by_waiter.items %}
-                <h3>Waiter: {{ waiter.user.first_name }} {{ waiter.user.last_name }}</h3>
-                <p>Orders Count: {{ orders.count }}</p>
+                <h3>Mhudumu: {{ waiter.user.first_name }} {{ waiter.user.last_name }}</h3>
+                <p>Idadi ya Oda: {{ orders.count }}</p>
                 <table>
                     <thead>
                         <tr>
-                            <th>Order ID</th>
-                            <th>Created</th>
-                            <th>Total Cost</th>
-                            <th>Payment Method</th>
-                            <th>Sender Name</th>
+                            <th>Oda No.</th>
+                            <th>Imewekwa</th>
+                            <th>Kiasi cha</th>
+                            <th>Aina ya Malipo</th>
+                            <th>Jina la Mtumaji</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -141,18 +141,18 @@
                 </table>
             {% endfor %}
         {% else %}
-            <p>No orders available for the selected waiters.</p>
+            <p>Hakuna Oda za Wahudumu</p>
         {% endif %}
         
         <!-- Display expenses in a table -->
-        <h2 class="section-title">Expenses Details</h2>
+        <h2 class="section-title">Matumizi ya Wahudumu</h2>
         <table>
             <thead>
                 <tr>
-                    <th>Waiter</th>
-                    <th>Date</th>
-                    <th>Amount</th>
-                    <th>Description</th>
+                    <th>Mhudumu</th>
+                    <th>Tarehe</th>
+                    <th>Kiasi</th>
+                    <th>Maelezo</th>
                 </tr>
             </thead>
             <tbody>

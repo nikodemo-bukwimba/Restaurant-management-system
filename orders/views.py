@@ -74,20 +74,12 @@ def user_orders(request):
         total_phone_payments = sum(order.get_total_cost() for order in orders if order.payment_method == 'phone')
 
         # Filter expenses by the active shift
-        if shift.end_time:
-            # For completed shifts
-            total_expenses = Expense.objects.filter(
-                waiter=waiter,
-                date__range=[shift.start_time.date(), shift.end_time.date()],
-                time__range=[shift.start_time.time(), shift.end_time.time()]
-            ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        if shift.completed:
+    # For completed shifts (simplified)
+            total_expenses = Expense.objects.filter(waiter=waiter,shift=shift).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
         else:
-            # For ongoing shifts
-            total_expenses = Expense.objects.filter(
-                waiter=waiter,
-                date=shift.start_time.date(),
-                time__range=[shift.start_time.time(), now.time()]
-            ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+    # For ongoing shifts (simplified)
+            total_expenses = Expense.objects.filter(waiter=waiter,shift=shift).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
 
         # Calculate the amount to submit
         amount_to_submit = total_sales - total_expenses - total_phone_payments

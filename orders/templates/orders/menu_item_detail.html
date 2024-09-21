@@ -1,5 +1,7 @@
 {% extends "orders/base.html" %}
+
 {% load static %}
+
 {% block title %}
     {{ menu_item.name }}
 {% endblock %}
@@ -29,7 +31,7 @@
         <form action="{% url 'cart:cart_add' menu_item.id %}" method="post">
             {{ cart_menu_item_form.as_p }}
             {% csrf_token %}
-            <input type="submit" value="Add to cart">
+            <input type="submit" value="Weka Kikapu">
         </form>
     </div>
 {% endblock %}
