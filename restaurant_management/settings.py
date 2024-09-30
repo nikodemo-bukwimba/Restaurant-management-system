@@ -24,7 +24,7 @@ LOGOUT_REDIRECT_URL = '/login/'
 SECRET_KEY = 'django-insecure-6w(0d8_skrmqq7t(my6slf&sze8w_dj5mh#*z8k@na)qxg$236'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['ec2-13-60-44-3.eu-north-1.compute.amazonaws.com','fbateringm.com',"127.0.0.1","13.60.44.3",]
 
