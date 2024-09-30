@@ -11,25 +11,18 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 import os
 from pathlib import Path
+from decouple import config
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 LOGOUT_REDIRECT_URL = '/login/'
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
+# Secret Key
+SECRET_KEY = config('DJANGO_SECRET_KEY', default='0ow#)3$-6s=s1%yps)x1*$&=n-$8+)jbi(*c@uyj7)a*c0+vef')
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-6w(0d8_skrmqq7t(my6slf&sze8w_dj5mh#*z8k@na)qxg$236'
-
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['ec2-13-60-44-3.eu-north-1.compute.amazonaws.com','fbateringm.com',"127.0.0.1","13.60.44.3",]
-
-
-# Application definition
+ALLOWED_HOSTS = ['ec2-13-60-44-3.eu-north-1.compute.amazonaws.com','fbateringm.com',"13.60.44.3","www.fbcatering.com","www.fbatering.com"]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -42,7 +35,6 @@ INSTALLED_APPS = [
     'orders',
     'cart',
     'oda',
-    
 ]
 
 MIDDLEWARE = [
@@ -77,22 +69,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'restaurant_management.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'fbcatering',  # Your database name
-        'USER': 'nikodemo',    # Your database user
-        'PASSWORD': 'Rombo@2024',  # Your database password
-        'HOST': 'localhost',    # Use the IP address if hosting remotely
-        'PORT': '5432',         # Default PostgreSQL port
+        'NAME': os.environ.get('DB_NAME', 'fbcatering'),
+        'USER': os.environ.get('DB_USER', 'nikodemo'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'Rombo@2024'),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
-# Password validation
-# https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -109,41 +95,28 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-# Internationalization
-# https://docs.djangoproject.com/en/5.0/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'Africa/Dar_es_salaam'
-
 USE_I18N = True
-
 USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'users', 'static'),
 ]
-
-# Directory where static files will be collected
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-MEDIA_URL = 'media/'
+MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 CART_SESSION_ID = 'cart'
 
-# Logging Configuration
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_SSL_REDIRECT = True
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
