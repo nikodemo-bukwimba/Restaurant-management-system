@@ -43,8 +43,15 @@ def menu_item_detail(request, id, slug):
     menu_item = get_object_or_404(MenuItem, id=id, slug=slug, available=True)
     cart_menu_item_form = CartAddMenuItemForm()
     
-    return render(request, 'orders/menu_item_detail.html',  {'menu_item': menu_item, 'cart_menu_item_form': cart_menu_item_form})
+    # Assuming your cart is stored in the session
+    cart = request.session.get('cart', {})  # Adjust based on your cart implementation
+    item_in_cart = menu_item.id in cart.get('items', [])  # Check if item ID is in cart items
 
+    return render(request, 'orders/menu_item_detail.html', {
+        'menu_item': menu_item,
+        'cart_menu_item_form': cart_menu_item_form,
+        'item_in_cart': item_in_cart,  # Pass this to the template
+    })
 
 @login_required
 def user_orders(request):
@@ -126,47 +133,53 @@ def add_expense(request):
                 expense = form.save(commit=False)
                 waiter = form.cleaned_data.get('waiter')
 
-                # Fetch the latest active shift for the selected waiter
-                shift = Shift.objects.filter(waiter=waiter, end_time__isnull=True).last()
+                if waiter:  # If the waiter is assigned
+                    # Fetch the latest active shift for the selected waiter
+                    shift = Shift.objects.filter(waiter=waiter, end_time__isnull=True).last()
 
-                if not shift:
-                    messages.error(request, "The selected waiter does not have an active shift.")
-                    return redirect('orders:add_expense')
+                    if not shift:
+                        messages.error(request, "The selected waiter does not have an active shift.")
+                        return redirect('orders:add_expense')
 
-                # Calculate total cash sales for the active shift
-                total_cash_sales = Order.objects.filter(
-                    shift=shift,
-                    payment_method='cash'
-                ).aggregate(
-                    total_sales=Sum('total_cost')
-                )['total_sales'] or Decimal('0.00')
+                    # Calculate total cash sales for the active shift
+                    total_cash_sales = Order.objects.filter(
+                        shift=shift,
+                        payment_method='cash'
+                    ).aggregate(
+                        total_sales=Sum('total_cost')
+                    )['total_sales'] or Decimal('0.00')
 
-                # Get total existing expenses for the current shift
-                existing_expenses = Expense.objects.filter(
-                    waiter=waiter,
-                    shift=shift,
-                    date=expense.date
-                ).aggregate(
-                    total_expenses=Sum('amount')
-                )['total_expenses'] or Decimal('0.00')
+                    # Get total existing expenses for the current shift
+                    existing_expenses = Expense.objects.filter(
+                        waiter=waiter,
+                        shift=shift,
+                        date=expense.date
+                    ).aggregate(
+                        total_expenses=Sum('amount')
+                    )['total_expenses'] or Decimal('0.00')
 
-                # Calculate the remaining cash available for expenses
-                remaining_cash = total_cash_sales - existing_expenses
+                    # Calculate the remaining cash available for expenses
+                    remaining_cash = total_cash_sales - existing_expenses
 
-                if remaining_cash <= 0:
-                    messages.error(request, "The waiter has no available cash sales for further expenses.")
-                    return redirect('orders:add_expense')
+                    if remaining_cash <= 0:
+                        messages.error(request, "Hakuna pesa taslimu inayopatikana kwa matumizi zaidi!!.")
+                        return redirect('orders:add_expense')
 
-                # Check if the new expense exceeds the remaining cash
-                if expense.amount > remaining_cash:
-                    messages.error(request, f"The expense exceeds the available cash. Maximum allowable expense is {remaining_cash}.")
-                    return redirect('orders:add_expense')
+                    # Check if the new expense exceeds the remaining cash
+                    if expense.amount > remaining_cash:
+                        messages.error(request, f"Kiwango cha juu kinachoruhusiwa kwa matumizi ni Tsh.{remaining_cash}.")
+                        return redirect('orders:add_expense')
 
-                # Save the expense and assign to the waiter and shift
-                expense.waiter = waiter
-                expense.shift = shift
+                    # Save the expense and assign to the waiter and shift
+                    expense.waiter = waiter
+                    expense.shift = shift
+
+                else:  # If no waiter is assigned, treat as manager's expense
+                    expense.waiter = None  # No waiter assigned
+                    expense.manager = manager  # Assign to the manager
+
                 expense.save()
-                messages.success(request, "Expense assigned successfully to the waiter.")
+                messages.success(request, "Matumizi yamewekwa kikamilifu.")
                 return redirect('orders:menu_item_list')
         else:
             form = ExpenseFormForManager()  # Form for managers with waiter selection
@@ -175,7 +188,7 @@ def add_expense(request):
         try:
             waiter = request.user.waiter
         except Waiter.DoesNotExist:
-            messages.error(request, "You are not a waiter. Please contact your manager.")
+            messages.error(request, "Wewe sio mhudumu. Tafadhali wasiliana na meneja wako.")
             return redirect('orders:menu_item_list')
 
         if request.method == 'POST':
@@ -187,7 +200,7 @@ def add_expense(request):
                 shift = Shift.objects.filter(waiter=waiter, end_time__isnull=True).last()
 
                 if not shift:
-                    messages.error(request, "You do not have an active shift.")
+                    messages.error(request, "Huna zamu inayoendelea.")
                     return redirect('orders:add_expense')
 
                 # Calculate total cash sales for the active shift
@@ -211,24 +224,25 @@ def add_expense(request):
                 remaining_cash = total_cash_sales - existing_expenses
 
                 if remaining_cash <= 0:
-                    messages.error(request, "You have no available cash sales for further expenses.")
+                    messages.error(request, "Huna mauzo ya pesa taslimu yaliyopo kwa matumizi zaidi.")
                     return redirect('orders:add_expense')
 
                 # Ensure the expense doesn't exceed remaining cash
                 if expense.amount > remaining_cash:
-                    messages.error(request, f"The expense exceeds your available cash. Maximum allowable expense is {remaining_cash}.")
+                    messages.error(request, f"Kiwango cha juu kinachoruhusiwa kwa matumizi ni Tsh.{remaining_cash}.")
                     return redirect('orders:add_expense')
 
                 # Save the expense and assign to the waiter and shift
                 expense.waiter = waiter
                 expense.shift = shift
                 expense.save()
-                messages.success(request, "Expense added successfully.")
+                messages.success(request, "Matumizi yamefanyika kikamilifu.")
                 return redirect('orders:menu_item_list')
         else:
             form = ExpenseForm(manager=None)  # Form for waiters without waiter selection
 
     return render(request, 'orders/add_expense.html', {'form': form})
+
 
 @login_required
 def waiter_expenses(request):
@@ -687,6 +701,13 @@ def detailed_sales_report(request):
     }
 
     return render(request, 'orders/detailed_sales_report.html', context)
+
+def order_detail(request, id):
+    order = get_object_or_404(Order, id=id)
+    context = {
+        'order': order,
+    }
+    return render(request, 'orders/order_detail.html', context)
 
 # users/views.py
 from django.shortcuts import render

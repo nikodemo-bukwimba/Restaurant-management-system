@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-6w(0d8_skrmqq7t(my6slf&sze8w_dj5mh#*z8k@na)qxg$236
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['ec2-13-60-44-3.eu-north-1.compute.amazonaws.com','fbateringm.com',"127.0.0.1","13.60.44.3",]
 
 
 # Application definition
@@ -83,12 +83,14 @@ WSGI_APPLICATION = 'restaurant_management.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'fbcatering',  # Your database name
+        'USER': 'nikodemo',    # Your database user
+        'PASSWORD': 'Rombo@2024',  # Your database password
+        'HOST': 'localhost',    # Use the IP address if hosting remotely
+        'PORT': '5432',         # Default PostgreSQL port
     }
 }
-
-
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
@@ -123,10 +125,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'users', 'static'),
 ]
+
+# Directory where static files will be collected
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -137,3 +142,23 @@ MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 CART_SESSION_ID = 'cart'
+
+# Logging Configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'error.log'),
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    },
+}

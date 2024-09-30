@@ -4,6 +4,7 @@ from .views import waiter_expenses, waiter_history
 # from .views import generate_manager_report
 from .views import add_menu_item
 from .views import detailed_sales_report
+from .views import order_detail
 
 app_name = 'orders'  
 app_name = 'expenses'
@@ -52,6 +53,9 @@ urlpatterns = [
     # URL pattern for menu items by category ID (consider if needed)
     path('menu-items/<int:category_id>/', views.menu_item_list, name='menu_item_list_by_category_id'),
 
-    path('add-menu-item/', views.add_menu_item, name='add_menu_item'),    
+    path('add-menu-item/', views.add_menu_item, name='add_menu_item'),
+
+    #Url for recent oders
+    path('order/<int:id>/', order_detail, name='order_detail'),     
 
 ]

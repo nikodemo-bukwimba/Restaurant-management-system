@@ -6,10 +6,76 @@
     <h2 class="mb-4 text-center">Dashibodi ya Meneja</h2>
 
     <!-- Buttons to Generate Report and View Report List -->
-    <div class="text-center custom-button-container"> <!-- Custom button container class for styling -->
+   <!-- Buttons to Generate Report and View Report List -->
+    <div class="text-center custom-button-container mb-4">
         <a href="{% url 'orders:generate_manager_report' %}" class="btn btn-primary btn-lg mr-2">Tengeneza Ripoti</a>
-        <a href="{% url 'orders:view_report_list' %}" class="btn btn-secondary btn-lg">Ripoti</a>
+        <a href="{% url 'orders:view_report_list' %}" class="btn btn-ripoti btn-lg">Ripoti</a>
     </div>
+
+
+    <!-- Recent Orders Section -->
+    <div class="recent-orders mt-5">
+        <h3 class="text-center">ODA MPYA</h3>
+        {% if recent_orders %}
+            <div class="table-responsive recent-orders-container" style="max-height: 400px; overflow-y: auto;">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th class="text-center">Oda No.</th>
+                            <th class="text-center">Mhudumu</th>
+                            <th class="text-center">Tarehe</th>
+                            <th class="text-center">Vitu Katika Oda</th>
+                            <th class="text-center">Jumla ya Kiasi</th>
+                            <th class="text-center">Njia ya Malipo</th>
+                            <th class="text-center">Jina la Mtumaji</th>
+                            <th class="text-center">Hali</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-table-body">
+                        {% for order in recent_orders %}
+                        <tr>
+                            <td class="text-center">{{ order.id }}</td>
+                            <td class="text-center">
+                                {% if order.assigned_waiter %}
+                                    {{ order.assigned_waiter.user.get_full_name }}
+                                {% else %}
+                                    {{ order.user.get_full_name }}
+                                {% endif %}
+                            </td>
+                            <td class="text-center">{{ order.created }}</td>
+                            <td class="text-center">
+                                <ul>
+                                    {% for item in order.items.all %}
+                                        <li>({{ item.menu_item.name }}) - Idadi: {{ item.quantity }}</li>
+                                    {% empty %}
+                                        <li>Hakuna Kitu</li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                            <td class="text-center">Tsh. {{ order.get_total_cost|floatformat:2 }}</td>
+                            <td class="text-center">{{ order.payment_method }}</td>
+                            <td class="text-center">{{ order.sender_name }}</td>
+                            <td class="text-center">
+                                {% if order.manager_confirmed %}
+                                    <span class="text-success">Imethibitishwa</span>
+                                {% else %}
+                                    <span class="text-danger">Inasubiri</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>                    
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info text-center" role="alert">
+                Hakuna Oda Mpya.
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Space between Recent Orders and Overview Cards -->
+    <div class="py-4"></div>  <!-- Adjusted padding for clear spacing -->
 
     <!-- Overview Cards Section -->
     <div class="row mt-4">
@@ -33,7 +99,7 @@
             <div class="card bg-info text-white">
                 <div class="card-header">Mauzo ya Jumla</div>
                 <div class="card-body">
-                    <h5 class="card-title text-center">{{ total_sales }}</h5>
+                    <h5 class="card-title text-center">Tsh. {{ total_sales|floatformat:2 }}</h5>
                 </div>
             </div>
         </div>
@@ -54,7 +120,7 @@
             </div>
             {% empty %}
             <div class="col-12">
-                <div class="alert alert-info" role="alert">
+                <div class="alert alert-info text-center" role="alert">
                     Hakuna Mhudumu Aliyepatikana.
                 </div>
             </div>
@@ -70,4 +136,45 @@
 
 {% block extra_js %}
 <script type="text/javascript" src="{% static 'js/script.js' %}"></script>
+<script>
+    let offset = {{ recent_orders|length }}; // Set initial offset based on current orders length
+
+    // JavaScript for handling infinite scroll
+    document.querySelector('.recent-orders-container').addEventListener('scroll', function() {
+        if (this.scrollTop + this.clientHeight >= this.scrollHeight) {
+            loadMoreOrders();
+        }
+    });
+
+    function loadMoreOrders() {
+        // Fetch more orders via AJAX
+        fetch(`/api/more-orders/?offset=${offset}&limit=10`) // Adjust this URL to your actual endpoint for fetching more orders
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.getElementById('orders-table-body');
+                data.orders.forEach(order => {
+                    const row = `
+                        <tr>
+                            <td class="text-center">${order.id}</td>
+                            <td class="text-center">${order.user_full_name}</td>
+                            <td class="text-center">${order.created}</td>
+                            <td class="text-center">
+                                <ul>
+                                    ${order.items.map(item => `<li>(${item.menu_item_name}) - Idadi: ${item.quantity}</li>`).join('')}
+                                </ul>
+                            </td>
+                            <td class="text-center">Tsh. ${order.total_cost.toFixed(2)}</td>
+                            <td class="text-center">${order.payment_method}</td>
+                            <td class="text-center">${order.sender_name}</td>
+                            <td class="text-center">${order.manager_confirmed ? '<span class="text-success">Imethibitishwa</span>' : '<span class="text-danger">Inasubiri</span>'}</td>
+                            <td><a href="/orders/order_detail/${order.id}/" class="btn btn-secondary btn-sm">Tizama</a></td>
+                        </tr>
+                    `;
+                    tableBody.insertAdjacentHTML('beforeend', row);
+                });
+                offset += data.orders.length; // Update offset for next fetch
+            })
+            .catch(error => console.error('Error loading more orders:', error));
+    }
+</script>
 {% endblock %}

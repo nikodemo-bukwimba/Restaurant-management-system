@@ -1,15 +1,15 @@
-{% extends "orders/base.html" %}
+{% extends "orders/base.html" %} 
 
 {% load static %}
 
 {% block title %}
     {{ menu_item.name }}
 {% endblock %}
+
 {% block content %}
     <div class="product-detail">
         <!-- Product Image -->
-        <img src="{% if menu_item.image %}{{ menu_item.image.url }}{% else %}
-        {% static "img/no_image.png" %}{% endif %}" alt="{{ menu_item.name }}">
+        <img src="{% if menu_item.image %}{{ menu_item.image.url }}{% else %}{% static "img/no_image.png" %}{% endif %}" alt="{{ menu_item.name }}">
 
         <!-- Product Name -->
         <h1>{{ menu_item.name }}</h1>
@@ -27,11 +27,31 @@
         <!-- Product Description -->
         {{ menu_item.description|linebreaks }}
 
+        <!-- Loading Indicator -->
+        <div id="loading-indicator" style="display:none;">Loading...</div>
+
         <!-- Cart Form -->
-        <form action="{% url 'cart:cart_add' menu_item.id %}" method="post">
+        {% if not item_in_cart %}
+        <form action="{% url 'cart:cart_add' menu_item.id %}" method="post" id="cart-form">
             {{ cart_menu_item_form.as_p }}
             {% csrf_token %}
-            <input type="submit" value="Weka Kikapu">
+            <input type="submit" value="Weka Kikapu" id="submit-button">
         </form>
+        {% else %}
+            <p>Item already in cart!</p>
+        {% endif %}
     </div>
+
+    <script>
+        document.getElementById('cart-form').onsubmit = function() {
+            var button = document.getElementById('submit-button');
+            var loadingIndicator = document.getElementById('loading-indicator');
+            
+            button.disabled = true; // Disable button
+            button.value = "Inaweka..."; // Change button text
+            loadingIndicator.textContent = 'Inapakia...'; // Change loading message
+            loadingIndicator.style.display = 'block'; // Show loading indicator
+        };
+    </script>
+    
 {% endblock %}

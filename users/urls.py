@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import user_login, ceo_dashboard, manager_dashboard, waiter_dashboard, waiter_detail_and_accept
+from .views import user_login, ceo_dashboard, manager_dashboard, waiter_dashboard, waiter_detail_and_accept,load_more_orders
 from orders import views as orders_views
 from . import views
 from django.contrib.auth import views as auth_views
@@ -21,5 +21,6 @@ urlpatterns = [
     path('manager_dashboard/', manager_dashboard, name='manager_dashboard'),
     path('ceo-dashboard/', ceo_dashboard, name='ceo_dashboard'),
     path('waiter-dashboard/', waiter_dashboard, name='waiter_dashboard'),
+    path('load-more-orders/', load_more_orders, name='load_more_orders'),
     # Other URL patterns
 ]

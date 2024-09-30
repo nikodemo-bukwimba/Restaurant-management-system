@@ -2,7 +2,7 @@ from decimal import Decimal
 from django.conf import settings
 from orders.models import MenuItem  # Import your MenuItem model
 
-class Cart:
+class Cart: 
     def __init__(self, request):
         """
         Initialize the cart.
@@ -19,6 +19,8 @@ class Cart:
         Add a menu item to the cart or update its quantity.
         """
         menu_item_id = str(menu_item.id)
+        
+        # Check if the item is already in the cart
         if menu_item_id not in self.cart:
             self.cart[menu_item_id] = {
                 'name': menu_item.name,
@@ -26,10 +28,13 @@ class Cart:
                 'quantity': 0,
                 'image': menu_item.image.url if menu_item.image else ''
             }
+
+        # Update quantity
         if update_quantity:
             self.cart[menu_item_id]['quantity'] = quantity
         else:
             self.cart[menu_item_id]['quantity'] += quantity
+
         self.save()
 
     def save(self):
@@ -47,6 +52,12 @@ class Cart:
         if menu_item_id in self.cart:
             del self.cart[menu_item_id]
             self.save()
+
+    def get_items(self):
+        """
+        Get all items in the cart.
+        """
+        return self.cart.values()
 
     def __iter__(self):
         """
@@ -80,4 +91,3 @@ class Cart:
         """
         del self.session[settings.CART_SESSION_ID]
         self.session.modified = True
-

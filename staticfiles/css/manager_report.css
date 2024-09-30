@@ -1,0 +1,90 @@
+/* Specific styles for tables in manager report */
+.container table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    margin: 20px 0; 
+}
+
+.container th, 
+.container td { 
+    padding: 12px; 
+    border: 1px solid #ddd; 
+    text-align: left; 
+}
+
+.container th { 
+    background-color: #e0e0e0; 
+    color: #333; 
+}
+
+.container tr:nth-child(even) { 
+    background-color: #fafafa; 
+}
+
+.container tr:hover { 
+    background-color: #f0f0f0; 
+}
+
+/* Additional specific styles */
+.container h1 { 
+    text-align: center; 
+    color: #444; 
+}
+
+.container h2.section-title {
+    margin-top: 30px;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 5px;
+    color: #333;
+}
+
+.container h3 { 
+    color: #444; 
+    margin-top: 20px; 
+}
+
+.container .btn-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.container .btn-primary { 
+    display: inline-block; 
+    padding: 12px 24px; 
+    font-size: 16px; 
+    color: #fff; 
+    background-color: #007bff; 
+    border: none; 
+    border-radius: 5px; 
+    text-decoration: none; 
+    text-align: center;
+}
+
+.container .btn-primary:hover { 
+    background-color: #0056b3; 
+}
+
+@media print {
+    .container .btn-primary {
+        display: none;
+    }
+}
+
+.container .messages {
+    list-style-type: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+.container .messages li {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #d4edda; /* Light green for success messages */
+    color: #155724;
+    opacity: 1;
+    transition: opacity 0.5s ease-out; /* Smooth fade-out effect */
+}

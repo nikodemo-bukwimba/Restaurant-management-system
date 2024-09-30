@@ -8,4 +8,4 @@ class CartAddMenuItemForm(forms.Form):
         choices=MENU_ITEM_QUANTITY_CHOICES,
         coerce=int
     )
-    update_quantity = forms.BooleanField(required=False, initial=False, widget=forms.HiddenInput)
+    update_quantity = forms.BooleanField(required=False, initial=False, widget=forms.HiddenInput())

@@ -4,34 +4,22 @@
     <div class="expense-container">
         <h1 class="expense-title">Ongeza Matumizi</h1>
         <div class="expense-form-container">
-            <form method="post" class="expense-form">
+            <form method="post" class="expense-form" id="expense-form">
                 {% csrf_token %}
                 {{ form.as_p }}  <!-- This will include the waiter dropdown -->
-                <button type="submit" class="btn-submit">Weka</button>
+                <button type="submit" class="btn-submit" id="submit-button">Weka</button>
+                <div id="loading-indicator" style="display:none;">Inaweka Matumizi...</div> <!-- Loading indicator with new text -->
             </form>
         </div>
     </div>
-{% endblock %}
 
-@login_required
-def add_expense(request):
-    try:
-        # Attempt to get the waiter object associated with the logged-in user
-        waiter = request.user.waiter
-    except ObjectDoesNotExist:
-        # Handle the case where the user does not have an associated waiter object
-        messages.error(request, "Wewe sio mhudumu, Tafadhali wasiliana na manager")
-        return redirect('orders:menu_item_list')  # Redirect to a relevant page
-    
-    if request.method == 'POST':
-        form = ExpenseForm(request.POST)
-        if form.is_valid():
-            expense = form.save(commit=False)
-            expense.waiter = waiter  # Link expense to the logged-in waiter
-            expense.save()
-            messages.success(request, "Expense added successfully.")
-            return redirect('orders:menu_item_list')  # Redirect after successful form submission
-    else:
-        form = ExpenseForm()
-    
-    return render(request, 'orders/add_expense.html', {'form': form})
+    <script>
+        document.getElementById('expense-form').onsubmit = function() {
+            var button = document.getElementById('submit-button');
+            var loadingIndicator = document.getElementById('loading-indicator');
+            
+            button.disabled = true; // Disable button
+            loadingIndicator.style.display = 'block'; // Show loading indicator with new text
+        };
+    </script>
+{% endblock %}

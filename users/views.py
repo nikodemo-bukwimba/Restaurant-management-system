@@ -44,6 +44,9 @@ def user_login(request):
         form = LoginForm()
     return render(request, 'users/login.html', {'form': form})
 
+
+from oda.models import Order, OrderItem, MenuItem
+from django.db.models import Sum, F
 @login_required
 def manager_dashboard(request):
     try:
@@ -51,27 +54,56 @@ def manager_dashboard(request):
     except Manager.DoesNotExist:
         return render(request, 'users/manager_dashboard.html', {'error': 'Manager profile not found.'})
 
-    # Get all waiters managed by this manager
     waiters_managed = Waiter.objects.filter(manager=manager)
-
-    # Get the active shifts for these waiters
     active_shifts = Shift.objects.filter(waiter__in=waiters_managed, completed=False)
 
-    # Filter orders that belong to these waiters and are in the active shift
+    # Filter orders for the active shifts of the managed waiters
     orders = Order.objects.filter(shift__in=active_shifts)
 
-    # Calculate total sales from the orders within the active shift
-    total_sales = orders.aggregate(total_sales=Sum('total_cost'))['total_sales'] or 0
+    # Calculate total sales
+    total_sales = OrderItem.objects.filter(order__in=orders).aggregate(
+        total_sales=Sum(F('price') * F('quantity'))
+    )['total_sales'] or 0
+
+    # Calculate total sales by category
+    sales_by_category = OrderItem.objects.filter(order__in=orders).values('menu_item__category__name').annotate(
+        total_sales=Sum(F('price') * F('quantity'))
+    ).order_by('menu_item__category__name')
+
+    # Get recent orders
+    recent_orders = orders.order_by('-created')[:30]  # Adjust the number of orders as needed
 
     context = {
         'waiters_managed': waiters_managed,
         'total_orders': orders.count(),
         'total_sales': total_sales,
+        'sales_by_category': sales_by_category,  # Add sales by category
+        'recent_orders': recent_orders,  # Include recent orders
         'is_manager': True,
         'is_ceo': False,
     }
     return render(request, 'users/manager_dashboard.html', context)
 
+from django.http import JsonResponse
+def load_more_orders(request):
+    # Get the offset from the request, defaulting to 0 if not provided
+    offset = int(request.GET.get('offset', 0))
+    # Fetch the next set of recent orders, ordered by created date
+    recent_orders = Order.objects.order_by('-created')[offset:offset + 10]
+
+    orders_data = []
+    for order in recent_orders:
+        orders_data.append({
+            'id': order.id,
+            'user_name': order.user.get_full_name(),
+            'created': order.created.strftime('%Y-%m-%d %H:%M:%S'),  # Format the date
+            'total_cost': order.get_total_cost(),
+            'payment_method': order.payment_method,
+            'sender_name': order.sender_name,
+            'manager_confirmed': order.manager_confirmed,
+        })
+    # Return the orders in a JSON response
+    return JsonResponse({'orders': orders_data})
 
 @login_required
 def ceo_dashboard(request):
