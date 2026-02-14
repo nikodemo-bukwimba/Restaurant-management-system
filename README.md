@@ -1,6 +1,8 @@
 This project is for restaurants order management, developed for Rombo Green View Hotel(RGVH), The language used much is python with django framework 100%.
 Html,Css and javascript() used for frontend.
 
+We welcome contributions! Please see CONTRIBUTING.md for instructions.
+
 //......................How to contribute to this project................................//
 
 1. Fork the repository
