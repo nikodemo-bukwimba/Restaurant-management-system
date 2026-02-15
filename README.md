@@ -148,4 +148,4 @@ Special thanks to the contributors and the team at Rombo Green View Hotel for th
 
 ---
 
-Feel free to explore the application and contribute to making it better! Happy coding!
+Feel free to explore the application and contribute to making it better! Happy contributing.
