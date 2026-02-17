@@ -6,12 +6,12 @@
 
 {% block content %}
     <div class="sales-report">
-        <h1>Ripoti ya Mauzo Kwa Maelezo</h1>
+        <h1>Ripoti ya Mauzo kwa Maelezo</h1>
 
         <!-- Total Sales -->
         <div class="total-sales">
             <h2>JUMLA YA MAUZO</h2>
-            <p>Tsh. {{ total_sales|floatformat:2 }}</p>
+            <p>Tsh. {{ total_sales|floatformat:2|default:"0.00" }}</p>
         </div>
 
         <!-- Sales by Category -->
@@ -20,7 +20,7 @@
             <table>
                 <thead>
                     <tr>
-                        <th>WAKATI WA:</th>
+                        <th>Kategoria</th>
                         <th>MAUZO (Tsh)</th>
                     </tr>
                 </thead>
@@ -28,7 +28,7 @@
                     {% for category_sales in sales_by_category %}
                         <tr>
                             <td>{{ category_sales.menu_item__category__name }}</td>
-                            <td>{{ category_sales.total_sales|floatformat:2 }}</td>
+                            <td>{{ category_sales.total_sales|floatformat:2|default:"0.00" }}</td>
                         </tr>
                     {% empty %}
                         <tr>
@@ -41,7 +41,7 @@
 
         <!-- Recent Orders -->
         <div class="recent-orders">
-            <h2>Recent Orders</h2>
+            <h2>Recent Orders (Latest First)</h2>
             <table>
                 <thead>
                     <tr>
@@ -55,7 +55,7 @@
                         <tr>
                             <td>{{ order.id }}</td>
                             <td>{{ order.created }}</td>
-                            <td>{{ order.total_cost|floatformat:2 }}</td>
+                            <td>{{ order.total_cost|floatformat:2|default:"0.00" }}</td>
                         </tr>
                     {% empty %}
                         <tr>
@@ -71,16 +71,16 @@
         <div class="manager-report mt-4">
             <h2>Manager Report</h2>
             <div class="report-details">
-                <p><strong>Total Sales:</strong> Tsh. {{ manager_report.total_sales|floatformat:2 }}</p>
-                <p><strong>Total Phone Payments:</strong> Tsh. {{ manager_report.total_phone_payments|floatformat:2 }}</p>
-                <p><strong>Total Expenses:</strong> Tsh. {{ manager_report.total_expenses|floatformat:2 }}</p>
-                <p><strong>Amount to Submit:</strong> Tsh. {{ manager_report.amount_to_submit|floatformat:2 }}</p>
+                <p><strong>Total Sales:</strong> Tsh. {{ manager_report.total_sales|floatformat:2|default:"0.00" }}</p>
+                <p><strong>Total Phone Payments:</strong> Tsh. {{ manager_report.total_phone_payments|floatformat:2|default:"0.00" }}</p>
+                <p><strong>Total Expenses:</strong> Tsh. {{ manager_report.total_expenses|floatformat:2|default:"0.00" }}</p>
+                <p><strong>Amount to Submit:</strong> Tsh. {{ manager_report.amount_to_submit|floatformat:2|default:"0.00" }}</p>
             </div>
             <div class="expenses-details mt-3">
                 <h3>Expenses Details:</h3>
                 <ul>
                     {% for expense in manager_report.expenses %}
-                        <li>{{ expense.description }}: Tsh. {{ expense.amount|floatformat:2 }}</li>
+                        <li>{{ expense.description }}: Tsh. {{ expense.amount|floatformat:2|default:"0.00" }}</li>
                     {% empty %}
                         <li>No expenses recorded</li>
                     {% endfor %}
